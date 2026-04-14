@@ -566,516 +566,419 @@ const DB = {
   }
 };
 
-// ─── Illustrations (clean stick figures) ──────────────────────────
+// ─── Illustrations ────────────────────────────────────────────────
 function illust(key, phase) {
-  const col = {初期:{a:"#B5455A",b:"#F9E5EA",c:"#E8A0AD"},中期:{a:"#C97B30",b:"#FBF0E0",c:"#E8B97A"},後期:{a:"#2C6E49",b:"#D6EDE1",c:"#74C69D"}}[phase]||{a:"#2C6E49",b:"#D6EDE1",c:"#74C69D"};
-  const a=col.a, bg=col.b, m=col.c;
-  // helper: head, body joints
-  const head=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`;
-  const line=(x1,y1,x2,y2,w,dash,clr)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${clr||a}" stroke-width="${w||2}" stroke-linecap="round" ${dash?`stroke-dasharray="${dash}"`:""}/>`;
-  const arc=(d,clr,w)=>`<path d="${d}" stroke="${clr||a}" stroke-width="${w||2}" stroke-linecap="round" fill="none"/>`;
-  const rect=(x,y,w,h,rx,clr,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx||3}" fill="${fill||bg}" stroke="${clr||a}" stroke-width="1.4"/>`;
-  const label=(x,y,t)=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="8" fill="${a}" font-family="'Noto Sans JP',sans-serif">${t}</text>`;
+  var cols = {
+    "初期": {a:"#B5455A", b:"#F9E5EA", m:"#E8A0AD"},
+    "中期": {a:"#C97B30", b:"#FBF0E0", m:"#E8B97A"},
+    "後期": {a:"#2C6E49", b:"#D6EDE1", m:"#74C69D"}
+  };
+  var c = cols[phase] || cols["後期"];
+  var a = c.a, b = c.b, m = c.m;
 
-  const defs = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">`;
+  function S(tag, attrs, inner) {
+    var attrStr = "";
+    for (var k in attrs) attrStr += " " + k + '="' + attrs[k] + '"';
+    return "<" + tag + attrStr + ">" + (inner||"") + "</" + tag + ">";
+  }
+  function circle(cx,cy,r,fill,stroke) {
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+(fill||b)+'" stroke="'+(stroke||a)+'" stroke-width="1.8"/>';
+  }
+  function line(x1,y1,x2,y2,w,col,dash) {
+    return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+(col||a)+'" stroke-width="'+(w||2)+'" stroke-linecap="round"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+  }
+  function path(d,col,w,fill,dash) {
+    return '<path d="'+d+'" stroke="'+(col||a)+'" stroke-width="'+(w||2)+'" stroke-linecap="round" fill="'+(fill||"none")+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+  }
+  function rect(x,y,w,h,rx,col,fill) {
+    return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+(rx||3)+'" fill="'+(fill||b)+'" stroke="'+(col||a)+'" stroke-width="1.4"/>';
+  }
+  function text(x,y,t) {
+    return '<text x="'+x+'" y="'+y+'" text-anchor="middle" font-size="9" fill="'+a+'" font-family="sans-serif">'+t+'</text>';
+  }
+  function wrap(body) {
+    return '<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">'+body+'</svg>';
+  }
 
-  const svgs = {
-    // Supine figure doing draw-in
-    draw_in: defs+
-      rect(8,38,84,26,12,a,bg)+
-      // person lying
-      `<ellipse cx="22" cy="51" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+ // head
-      line(32,51,60,51,2.5)+  // torso
-      line(50,51,44,44,2)+  // knee up
-      line(44,44,50,38,2)+  // lower leg
-      // belly arrow in
-      `<ellipse cx="50" cy="51" rx="10" ry="5" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      arc("M45 51 Q50 46 55 51",m,1.5)+
-      label(50,88,"腹部をへこます")+
-    `</svg>`,
-
-    pelvic_tilt: defs+
-      rect(8,40,84,22,10,a,bg)+
-      `<ellipse cx="22" cy="51" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(32,51,55,51,2.5)+
-      line(55,51,50,42,2)+
-      line(50,42,58,37,2)+
-      line(55,51,62,42,2)+
-      line(62,42,68,38,2)+
-      arc("M46 51 Q55 44 64 51","#fff",1.5)+
-      arc("M46 54 Q55 60 64 54",m,2)+
-      label(50,88,"骨盤を前後に傾ける")+
-    `</svg>`,
-
-    cat_cow: defs+
-      // 4-point position
-      line(20,50,80,50,3)+  // spine
-      line(20,50,18,68,2)+line(20,50,22,68,2)+ // front legs
-      line(80,50,78,68,2)+line(80,50,82,68,2)+ // back legs
-      `<circle cx="14" cy="45" r="7" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+ // head
-      line(14,52,20,50,2)+
-      // cat arch
-      arc(`M25 50 Q50 35 75 50`,m,2.5)+
-      // cow dip
-      arc(`M25 50 Q50 62 75 50`,a,1.5)+
-      label(25,82,"キャット")+label(75,78,"カウ")+
-    `</svg>`,
-
-    knee_chest: defs+
-      rect(8,42,84,20,10,a,bg)+
-      `<ellipse cx="20" cy="52" rx="9" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(29,52,50,52,2.5)+
-      // knees pulled up
-      line(50,52,56,40,2)+line(56,40,66,44,2)+
-      line(50,52,60,40,2)+line(60,40,68,44,2)+
-      // arms hugging
-      arc(`M52 50 Q62 35 66 44`,m,2)+
-      arc(`M50 54 Q60 68 66 58`,m,1.5)+
-      label(50,88,"膝を胸へ引き寄せる")+
-    `</svg>`,
-
-    breathing: defs+
-      // seated figure
-      `<circle cx="50" cy="22" r="9" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(50,31,50,58,2.5)+
-      line(50,38,38,50,2)+line(50,38,62,50,2)+ // arms
-      line(50,58,42,76,2)+line(50,58,58,76,2)+
-      // breath waves
-      arc(`M30 44 Q38 38 46 44 Q54 50 62 44`,m,2)+
-      arc(`M28 52 Q36 46 44 52 Q52 58 60 52`,m,1.5)+
-      label(50,90,"腹式呼吸")+
-    `</svg>`,
-
-    hip_lift: defs+
-      rect(8,72,84,8,4,a,bg)+
-      `<ellipse cx="20" cy="75" rx="9" ry="5" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(29,75,48,75,2.5)+
-      // hips raised
-      arc(`M48 75 Q60 50 72 55`,a,2.5)+
+  var figures = {
+    draw_in: wrap(
+      rect(8,42,84,22,11,a,b)+
+      circle(22,53,9,b,a)+
+      line(31,53,58,53,2.5)+
+      line(50,53,44,46,2)+ line(44,46,52,39,2)+
+      '<ellipse cx="50" cy="53" rx="11" ry="6" fill="'+m+'" stroke="'+a+'" stroke-width="1.2"/>'+
+      path("M44 53 Q50 47 56 53",m,1.5)+
+      text(50,87,"腹部をへこます")
+    ),
+    pelvic_tilt: wrap(
+      rect(8,44,84,20,10,a,b)+
+      circle(22,54,9,b,a)+
+      line(31,54,55,54,2.5)+
+      line(55,54,50,45,2)+ line(50,45,58,39,2)+
+      line(55,54,62,45,2)+ line(62,45,68,40,2)+
+      path("M46 54 Q55 46 64 54",m,2.5)+
+      path("M46 57 Q55 63 64 57",a,1.5)+
+      text(50,87,"骨盤を前後に傾ける")
+    ),
+    cat_cow: wrap(
+      line(20,50,80,50,3)+
+      line(20,50,18,68,2)+ line(20,50,24,68,2)+
+      line(80,50,78,68,2)+ line(80,50,82,68,2)+
+      circle(14,44,7,b,a)+
+      line(14,51,20,50,2)+
+      path("M25 50 Q50 34 75 50",m,2.5)+
+      path("M25 50 Q50 63 75 50",a,1.5)+
+      text(28,80,"キャット")+ text(72,76,"カウ")
+    ),
+    hip_lift: wrap(
+      rect(8,72,84,8,4,a,b)+
+      circle(20,75,8,b,a)+
+      line(28,75,48,75,2.5)+
+      path("M48 75 Q60 50 72 55",a,2.5)+
       line(72,55,74,72,2)+
       line(48,75,46,72,1.5)+
-      `<ellipse cx="60" cy="52" rx="14" ry="8" fill="${m}" stroke="${a}" stroke-width="1.2" opacity=".7"/>`+
-      label(50,90,"殿部を持ち上げる")+
-    `</svg>`,
-
-    dead_bug: defs+
-      rect(8,42,84,18,9,a,bg)+
-      `<ellipse cx="20" cy="51" rx="9" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(29,51,55,51,2.5)+
-      // right arm up
-      line(38,48,30,32,2)+
-      // left arm down
-      line(42,48,34,62,m,1.5)+`<line x1="42" y1="48" x2="34" y2="62" stroke="${m}" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 2"/>`+
-      // left leg up (straight)
-      line(60,51,72,34,2)+
-      // right leg down
-      line(65,51,76,68,2)+
-      label(50,88,"対角の手足を伸ばす")+
-    `</svg>`,
-
-    bird_dog: defs+
+      '<ellipse cx="60" cy="52" rx="14" ry="8" fill="'+m+'" stroke="'+a+'" stroke-width="1.2" opacity=".7"/>'+
+      text(50,90,"殿部を持ち上げる")
+    ),
+    dead_bug: wrap(
+      rect(8,44,84,16,8,a,b)+
+      circle(20,52,8,b,a)+
+      line(28,52,55,52,2.5)+
+      line(38,48,28,32,2)+
+      line(42,48,34,64,m,2,"3 2")+
+      line(60,52,72,36,2)+
+      line(65,52,76,68,2)+
+      text(50,87,"対角の手足を伸ばす")
+    ),
+    bird_dog: wrap(
       line(22,50,78,50,3)+
-      // 4 legs
-      line(30,50,28,70,2)+line(38,50,36,70,2)+
-      line(62,50,60,70,2)+line(70,50,72,70,2)+
-      `<circle cx="15" cy="44" r="7" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(30,50,28,70,2)+ line(38,50,36,70,2)+
+      line(62,50,60,70,2)+ line(70,50,72,70,2)+
+      circle(15,44,7,b,a)+
       line(15,51,22,50,2)+
-      // extended arm (left up/forward)
-      line(30,46,14,32,2.5)+
-      // extended leg (right back)
-      line(70,46,86,32,2.5)+
-      `<circle cx="10" cy="28" r="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
-      `<circle cx="90" cy="28" r="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
-      label(50,86,"対角の手足を水平に")+
-    `</svg>`,
-
-    hip_abduct: defs+
-      rect(8,54,84,14,7,a,bg)+
-      `<ellipse cx="22" cy="61" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(32,61,55,61,2.5)+
-      line(22,67,20,80,2)+
-      line(40,67,42,80,2)+
-      // top leg raising
-      line(55,54,72,38,2.5)+
-      line(55,67,56,80,2)+
-      arc(`M55 54 Q65 46 72 38`,m,1.5)+
-      `<circle cx="74" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
-      label(50,92,"脚を持ち上げる")+
-    `</svg>`,
-
-    balance: defs+
-      `<circle cx="50" cy="14" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      line(50,22,50,48,2.5)+
-      line(50,32,36,44,2)+line(50,32,64,44,2)+
-      // single leg
-      line(50,48,50,76,2.5)+
-      // other leg raised (dashed)
-      line(50,55,38,68,2)+`<line x1="50" y1="55" x2="38" y2="68" stroke="${m}" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 2"/>`+
-      `<ellipse cx="50" cy="80" rx="12" ry="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
-      label(50,92,"片脚立ち")+
-    `</svg>`,
-
-    squat: defs+
-      `<circle cx="50" cy="12" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(30,46,12,32,2.5)+
+      line(70,46,88,32,2.5)+
+      circle(8,28,4,m,a)+
+      circle(92,28,4,m,a)+
+      text(50,85,"対角の手足を水平に")
+    ),
+    squat: wrap(
+      circle(50,12,8,b,a)+
       line(50,20,50,40,2.5)+
-      line(50,30,36,40,2)+line(50,30,64,40,2)+
-      // hips back, knees bent
-      arc(`M50 40 Q42 52 34 58`,a,2.5)+
-      arc(`M50 40 Q58 52 66 58`,a,2.5)+
-      line(34,58,30,76,2)+line(66,58,70,76,2)+
-      line(24,76,76,76,1.5)+
-      // angle marker
-      arc(`M38 50 Q34 44 40 42`,m,1.5)+
-      label(50,90,"膝を曲げてしゃがむ")+
-    `</svg>`,
-
-    lunge: defs+
-      `<circle cx="42" cy="11" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,30,36,40,2)+ line(50,30,64,40,2)+
+      path("M50 40 Q42 52 34 58",a,2.5)+
+      path("M50 40 Q58 52 66 58",a,2.5)+
+      line(34,58,30,76,2)+ line(66,58,70,76,2)+
+      line(22,76,78,76,1.5)+
+      text(50,90,"膝を曲げてしゃがむ")
+    ),
+    lunge: wrap(
+      circle(42,11,8,b,a)+
       line(42,19,42,38,2.5)+
-      line(42,28,28,38,2)+line(42,28,56,38,2)+
-      // front knee bent
-      arc(`M42 38 Q50 52 56 58`,a,2.5)+
+      line(42,28,28,38,2)+ line(42,28,56,38,2)+
+      path("M42 38 Q50 52 56 58",a,2.5)+
       line(56,58,60,76,2)+
-      // back leg
       line(42,38,32,58,2.5)+
       line(32,58,28,76,2)+
-      line(22,76,66,76,1.5)+
-      label(42,90,"踏み出してしゃがむ")+
-    `</svg>`,
-
-    plank: defs+
+      line(20,76,68,76,1.5)+
+      text(42,90,"踏み出してしゃがむ")
+    ),
+    plank: wrap(
       line(12,56,80,56,3)+
-      `<circle cx="84" cy="47" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      circle(84,47,8,b,a)+
       line(84,55,80,56,2)+
-      // forearms
-      line(16,56,16,68,2)+line(28,56,28,68,2)+
+      line(16,56,16,68,2)+ line(28,56,28,68,2)+
       line(8,68,36,68,1.5)+
-      // feet
-      line(74,56,72,68,2)+
-      line(80,56,78,68,2)+
+      line(74,56,72,68,2)+ line(80,56,78,68,2)+
       line(64,68,86,68,1.5)+
-      // straight body line
-      line(16,56,80,56,1,`4 2`,m)+
-      label(48,84,"体を一直線に保つ")+
-    `</svg>`,
-
-    rdl: defs+
-      `<circle cx="72" cy="16" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      arc(`M72 24 L40 48`,a,2.5)+
-      line(40,48,20,36,2)+ // arms hanging
-      line(40,48,24,44,2)+
-      // hips hinge
-      line(56,44,58,68,2.5)+
-      line(70,48,72,76,2.5)+
-      line(48,76,80,76,1.5)+
-      arc(`M60 44 Q56 36 64 34`,m,2)+
-      label(48,90,"股関節を折り曲げる")+
-    `</svg>`,
-
-    quad_set: defs+
-      rect(8,44,84,20,10,a,bg)+
-      `<ellipse cx="22" cy="54" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(32,54,72,54,2.5)+
-      line(22,60,20,76,2)+
-      // straight leg
-      line(65,54,76,54,2.5)+
-      // quad highlight
-      `<rect x="35" y="47" width="30" height="9" rx="4" fill="${m}" stroke="${a}" stroke-width="1" opacity=".7"/>`+
-      label(50,88,"太もも裏を押しつける")+
-    `</svg>`,
-
-    knee_ext: defs+
-      // seated
-      rect(10,36,32,36,6,a,bg)+
-      `<circle cx="26" cy="28" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      text(48,84,"体を一直線に保つ")
+    ),
+    balance: wrap(
+      circle(50,12,8,b,a)+
+      line(50,20,50,44,2.5)+
+      line(50,30,36,40,2)+ line(50,30,64,40,2)+
+      line(50,44,50,76,2.5)+
+      line(50,56,38,70,m,2,"3 2")+
+      '<ellipse cx="50" cy="80" rx="12" ry="4" fill="'+m+'" stroke="'+a+'" stroke-width="1"/>'+
+      text(50,92,"片脚立ち")
+    ),
+    quad_set: wrap(
+      rect(8,46,84,18,9,a,b)+
+      circle(22,55,9,b,a)+
+      line(31,55,70,55,2.5)+
+      line(22,62,20,76,2)+
+      line(65,55,78,55,2.5)+
+      '<rect x="35" y="48" width="28" height="9" rx="4" fill="'+m+'" stroke="'+a+'" stroke-width="1" opacity=".7"/>'+
+      text(50,88,"太もも裏を押しつける")
+    ),
+    knee_ext: wrap(
+      rect(10,36,32,36,6,a,b)+
+      circle(26,28,8,b,a)+
       line(26,36,26,54,2.5)+
-      // leg extending
       line(26,54,46,54,2)+
       line(46,54,68,48,2.5)+
-      arc(`M46 54 Q60 46 68 48`,m,2)+
-      `<circle cx="68" cy="47" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      label(50,86,"膝を伸ばす")+
-    `</svg>`,
-
-    step_up: defs+
-      rect(32,66,56,18,4,a,bg)+
-      `<circle cx="38" cy="30" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      path("M46 54 Q60 46 68 48",m,2)+
+      circle(68,47,4,m,a)+
+      text(50,86,"膝を伸ばす")
+    ),
+    step_up: wrap(
+      rect(32,66,56,18,4,a,b)+
+      circle(38,30,8,b,a)+
       line(38,38,38,54,2.5)+
-      line(38,46,26,54,2)+line(38,46,50,54,2)+
+      line(38,46,26,54,2)+ line(38,46,50,54,2)+
       line(38,54,42,66,2.5)+
       line(42,66,44,80,2)+
-      // step foot
-      line(38,54,28,62,2)+`<line x1="38" y1="54" x2="28" y2="62" stroke="${m}" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 2"/>`+
-      label(55,92,"台に踏み上がる")+
-    `</svg>`,
-
-    ham_stretch: defs+
-      rect(8,50,84,16,8,a,bg)+
-      `<ellipse cx="22" cy="58" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(32,58,50,58,2.5)+
-      line(22,64,20,78,2)+
-      // leg raised
-      line(50,50,72,32,2.5)+
-      line(50,64,52,78,2)+
-      // stretch highlight
-      arc(`M50 50 Q62 40 72 32`,m,2)+
-      `<ellipse cx="72" cy="30" rx="5" ry="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
-      label(50,90,"膝裏を伸ばす")+
-    `</svg>`,
-
-    ankle_pump: defs+
-      rect(8,50,84,16,8,a,bg)+
-      `<ellipse cx="22" cy="58" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(32,58,68,58,2.5)+
-      line(22,64,20,78,2)+
-      line(54,64,52,78,2)+
-      // foot up
-      arc(`M68 58 Q76 52 80 44`,a,2.5)+
-      // foot down dashed
-      arc(`M68 58 Q76 64 80 70`,m,2)+
-      label(50,90,"足首を上下に動かす")+
-    `</svg>`,
-
-    hip_flex: defs+
-      rect(8,52,84,14,7,a,bg)+
-      `<ellipse cx="22" cy="59" rx="10" ry="5" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(32,59,48,59,2.5)+
-      line(22,64,20,76,2)+
-      // knee to chest
-      arc(`M48 52 Q54 38 60 44`,a,2)+
-      line(60,44,62,52,2)+
-      line(62,52,64,64,1.5)+
-      arc(`M50 56 Q58 50 62 56`,m,1.5)+
-      label(50,88,"膝をお腹へ")+
-    `</svg>`,
-
-    single_squat: defs+
-      `<circle cx="46" cy="12" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      line(46,20,46,40,2.5)+
-      line(46,30,32,40,2)+line(46,30,60,40,2)+
-      // bent knee
-      arc(`M46 40 Q38 54 30 60`,a,2.5)+
-      line(30,60,26,78,2)+
-      // other leg hinting
-      line(46,40,56,54,1.5)+`<line x1="46" y1="40" x2="56" y2="54" stroke="${m}" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 2"/>`+
-      line(24,78,64,78,1.5)+
-      label(46,92,"片脚でしゃがむ")+
-    `</svg>`,
-
-    step_down: defs+
-      rect(30,68,58,16,4,a,bg)+
-      `<circle cx="54" cy="20" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      line(54,28,54,46,2.5)+
-      line(54,36,42,44,2)+line(54,36,66,44,2)+
-      // leg going down slowly
-      arc(`M54 46 Q48 56 42 66`,a,2.5)+
-      line(42,66,40,80,2)+
-      // standing leg
-      line(54,46,56,68,2.5)+
-      label(50,92,"ゆっくり下りる")+
-    `</svg>`,
-
-    calf_raise: defs+
-      `<circle cx="50" cy="12" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      line(50,20,50,44,2.5)+
-      line(50,30,36,40,2)+line(50,30,64,40,2)+
-      line(50,44,42,62,2.5)+line(50,44,58,62,2.5)+
-      // heels raised
-      line(42,62,40,70,2)+line(58,62,60,70,2)+
-      `<ellipse cx="50" cy="70" rx="18" ry="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
-      line(34,72,66,72,2)+
-      line(34,68,38,72,1.5)+line(66,68,62,72,1.5)+
-      label(50,88,"かかとを持ち上げる")+
-    `</svg>`,
-
-    pendulum: defs+
-      // leaning forward figure
-      arc(`M30 24 Q36 14 44 12`,a,2)+
-      `<circle cx="44" cy="10" r="7" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(38,54,28,62,m,2,"3 2")+
+      text(55,92,"台に踏み上がる")
+    ),
+    ham_stretch: wrap(
+      rect(8,52,84,14,7,a,b)+
+      circle(22,59,9,b,a)+
+      line(31,59,50,59,2.5)+
+      line(22,65,20,78,2)+
+      line(50,52,72,34,2.5)+
+      line(50,65,52,78,2)+
+      path("M50 52 Q62 42 72 34",m,2)+
+      circle(72,32,5,m,a)+
+      text(50,90,"膝裏を伸ばす")
+    ),
+    hip_abduct: wrap(
+      rect(8,54,84,14,7,a,b)+
+      circle(22,61,9,b,a)+
+      line(31,61,55,61,2.5)+
+      line(22,66,20,78,2)+
+      line(45,66,44,78,2)+
+      line(55,54,72,38,2.5)+
+      line(55,66,56,78,2)+
+      path("M55 54 Q65 46 72 38",m,2)+
+      circle(74,36,4,m,a)+
+      text(50,92,"脚を持ち上げる")
+    ),
+    ankle_pump: wrap(
+      rect(8,52,84,14,7,a,b)+
+      circle(22,59,9,b,a)+
+      line(31,59,68,59,2.5)+
+      line(22,65,20,78,2)+
+      line(54,65,52,78,2)+
+      path("M68 59 Q76 52 80 44",a,2.5)+
+      path("M68 59 Q76 66 80 72",m,2)+
+      text(50,90,"足首を上下に動かす")
+    ),
+    hip_flex: wrap(
+      rect(8,54,84,12,6,a,b)+
+      circle(22,60,9,b,a)+
+      line(31,60,48,60,2.5)+
+      line(22,65,20,76,2)+
+      path("M48 54 Q54 40 60 46",a,2)+
+      line(60,46,62,54,2)+
+      text(50,88,"膝をお腹へ")
+    ),
+    pendulum: wrap(
+      path("M30 24 Q36 14 44 12",a,2)+
+      circle(44,10,7,b,a)+
       line(44,17,38,38,2.5)+
-      line(38,38,30,58,1.5)+
-      line(38,38,52,56,1.5)+
-      // dangling arm with circle path
+      line(38,38,30,58,1.5)+ line(38,38,52,56,1.5)+
       line(28,40,22,62,2)+
-      `<ellipse cx="22" cy="62" rx="12" ry="5" stroke="${m}" stroke-width="1.5" stroke-dasharray="3 2" fill="none"/>`+
-      `<circle cx="22" cy="57" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      label(22,80,"円を描く")+
-    `</svg>`,
-
-    scap_squeeze: defs+
-      `<circle cx="50" cy="18" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      '<ellipse cx="22" cy="62" rx="12" ry="5" stroke="'+m+'" stroke-width="1.5" stroke-dasharray="3 2" fill="none"/>'+
+      circle(22,57,4,m,a)+
+      text(22,80,"円を描く")
+    ),
+    scap_squeeze: wrap(
+      circle(50,18,8,b,a)+
       line(50,26,50,50,2.5)+
-      // arms back squeezing
-      arc(`M50 34 Q40 38 32 34`,a,2)+
-      arc(`M50 34 Q60 38 68 34`,a,2)+
-      line(32,34,28,46,2)+
-      line(68,34,72,46,2)+
-      `<ellipse cx="50" cy="36" rx="16" ry="8" fill="${m}" stroke="${a}" stroke-width="1" opacity=".5"/>`+
-      line(50,50,44,70,2)+line(50,50,56,70,2)+
-      label(50,86,"肩甲骨を寄せる")+
-    `</svg>`,
-
-    ext_rotation: defs+
-      `<circle cx="38" cy="18" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      line(38,26,38,50,2.5)+
-      line(38,34,26,42,2)+
-      // elbow at 90° against body
-      line(38,34,56,34,2)+
-      line(56,34,56,50,2)+ // upper arm down
-      // forearm rotating out
-      arc(`M56 50 Q68 50 70 38`,a,2.5)+
-      `<circle cx="70" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      arc(`M56 50 Q64 58 70 52`,m,1.5)+
-      label(55,82,"腕を外側に回す")+
-    `</svg>`,
-
-    int_rotation: defs+
-      `<circle cx="38" cy="18" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      path("M50 34 Q40 38 32 34",a,2)+
+      path("M50 34 Q60 38 68 34",a,2)+
+      line(32,34,28,46,2)+ line(68,34,72,46,2)+
+      '<ellipse cx="50" cy="36" rx="16" ry="8" fill="'+m+'" stroke="'+a+'" stroke-width="1" opacity=".5"/>'+
+      line(50,50,44,70,2)+ line(50,50,56,70,2)+
+      text(50,86,"肩甲骨を寄せる")
+    ),
+    ext_rotation: wrap(
+      circle(38,18,8,b,a)+
       line(38,26,38,50,2.5)+
       line(38,34,26,42,2)+
       line(38,34,56,34,2)+
       line(56,34,56,50,2)+
-      // forearm rotating inward
-      arc(`M56 50 Q44 50 42 38`,a,2.5)+
-      `<circle cx="42" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      arc(`M56 50 Q48 58 42 52`,m,1.5)+
-      label(55,82,"腕を内側に回す")+
-    `</svg>`,
-
-    wall_push: defs+
-      rect(80,10,12,80,4,a,bg)+
-      `<circle cx="38" cy="20" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      line(38,28,38,50,2.5)+
-      line(38,36,24,44,2)+
-      // arms reaching wall
-      line(38,36,60,40,2)+line(60,40,80,42,2)+
-      line(38,50,32,70,2)+line(38,50,44,70,2)+
-      line(24,70,52,70,1.5)+
-      label(46,88,"壁を押す")+
-    `</svg>`,
-
-    side_ext_rot: defs+
-      rect(8,54,84,14,7,a,bg)+
-      `<ellipse cx="22" cy="61" rx="10" ry="5" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
-      line(32,61,55,61,2.5)+
-      line(22,66,20,78,2)+
-      line(45,66,44,78,2)+
-      // elbow bent, forearm up
-      line(55,54,62,54,2)+
-      arc(`M62 54 Q70 46 72 38`,a,2.5)+
-      `<circle cx="72" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      label(50,90,"腕を外側に回す")+
-    `</svg>`,
-
-    shoulder_flex: defs+
-      `<circle cx="50" cy="50" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      line(50,58,50,78,2.5)+
-      line(50,66,38,74,2)+
-      line(50,58,56,58,1.5)+
-      // arm raising forward
-      arc(`M50 50 Q46 38 42 26`,a,2.5)+
-      `<circle cx="42" cy="24" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      label(50,92,"前方に腕を上げる")+
-    `</svg>`,
-
-    shoulder_press: defs+
-      `<circle cx="50" cy="40" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      path("M56 50 Q68 50 70 38",a,2.5)+
+      circle(70,36,4,m,a)+
+      text(55,82,"腕を外側に回す")
+    ),
+    int_rotation: wrap(
+      circle(38,18,8,b,a)+
+      line(38,26,38,50,2.5)+
+      line(38,34,26,42,2)+
+      line(38,34,56,34,2)+
+      line(56,34,56,50,2)+
+      path("M56 50 Q44 50 42 38",a,2.5)+
+      circle(42,36,4,m,a)+
+      text(55,82,"腕を内側に回す")
+    ),
+    shoulder_press: wrap(
+      circle(50,40,8,b,a)+
       line(50,48,50,68,2.5)+
-      line(50,56,36,64,2)+line(50,56,64,64,2)+
-      line(50,68,44,82,2)+line(50,68,56,82,2)+
-      // arms pressing up
-      line(36,64,28,40,2.5)+line(28,40,26,24,2.5)+
-      line(64,64,72,40,2.5)+line(72,40,74,24,2.5)+
-      `<circle cx="26" cy="22" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      `<circle cx="74" cy="22" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      label(50,94,"頭上に押し上げる")+
-    `</svg>`,
-
-    lat_pull: defs+
+      line(50,56,36,64,2)+ line(50,56,64,64,2)+
+      line(50,68,44,82,2)+ line(50,68,56,82,2)+
+      line(36,64,28,40,2.5)+ line(28,40,26,24,2.5)+
+      line(64,64,72,40,2.5)+ line(72,40,74,24,2.5)+
+      circle(26,22,4,m,a)+ circle(74,22,4,m,a)+
+      text(50,94,"頭上に押し上げる")
+    ),
+    lat_pull: wrap(
       line(14,18,86,18,2)+
-      `<circle cx="50" cy="36" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      circle(50,36,8,b,a)+
       line(50,44,50,64,2.5)+
-      line(50,52,36,60,2)+line(50,52,64,60,2)+
-      line(50,64,44,80,2)+line(50,64,56,80,2)+
-      // arms pulling down
-      line(36,28,30,44,2.5)+`<line x1="36" y1="28" x2="30" y2="44" stroke="${m}" stroke-width="2" stroke-linecap="round"/>`+
-      line(64,28,70,44,2.5)+`<line x1="64" y1="28" x2="70" y2="44" stroke="${m}" stroke-width="2" stroke-linecap="round"/>`+
-      label(50,92,"引き下げる")+
-    `</svg>`,
-
-    push_up: defs+
-      `<circle cx="76" cy="32" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,52,36,60,2)+ line(50,52,64,60,2)+
+      line(50,64,44,80,2)+ line(50,64,56,80,2)+
+      line(36,28,30,44,2.5)+
+      line(64,28,70,44,2.5)+
+      text(50,92,"引き下げる")
+    ),
+    push_up: wrap(
+      circle(76,32,8,b,a)+
       line(76,40,76,54,2.5)+
-      line(76,46,62,44,2)+line(62,44,56,56,2)+
-      line(76,46,90,44,2)+line(90,44,92,54,1.5)+
+      line(76,46,62,44,2)+ line(62,44,56,56,2)+
       line(16,62,76,54,3)+
-      line(16,62,14,72,2)+line(22,62,20,72,2)+
-      line(10,72,30,72,1.5)+
-      line(70,54,70,72,2)+line(78,54,78,72,2)+
+      line(16,62,14,72,2)+ line(22,62,20,72,2)+
+      line(8,72,30,72,1.5)+
+      line(70,54,70,72,2)+ line(78,54,78,72,2)+
       line(62,72,86,72,1.5)+
-      label(48,86,"プッシュアップ")+
-    `</svg>`,
-
-    rear_delt: defs+
-      `<circle cx="62" cy="24" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      arc(`M62 32 L62 54`,a,2.5)+
-      line(62,38,50,44,2)+
-      line(62,54,56,72,2)+line(62,54,68,72,2)+
-      // arm raising backward horizontally
-      arc(`M62 38 Q48 32 30 36`,a,2.5)+
-      `<circle cx="28" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      label(50,88,"腕を水平に持ち上げる")+
-    `</svg>`,
-
-    side_raise: defs+
-      `<circle cx="50" cy="20" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      line(50,28,50,52,2.5)+
-      line(50,52,44,70,2)+line(50,52,56,70,2)+
-      // arms raising sideways
-      arc(`M50 36 Q38 32 26 36`,a,2.5)+
-      arc(`M50 36 Q62 32 74 36`,a,2.5)+
-      `<circle cx="24" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      `<circle cx="76" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
-      label(50,86,"腕を横に持ち上げる")+
-    `</svg>`,
-
-    face_pull: defs+
-      rect(82,20,10,60,4,a,bg)+
-      `<circle cx="34" cy="32" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      line(34,40,34,60,2.5)+
-      line(34,48,22,54,2)+
-      line(34,60,28,76,2)+line(34,60,40,76,2)+
-      // arms pulling to face level
-      line(34,44,50,40,2)+line(50,40,82,38,2)+
-      line(34,44,50,48,2)+line(50,48,82,52,2)+
-      label(46,92,"顔の前に引く")+
-    `</svg>`,
-
-    shrug: defs+
-      `<circle cx="50" cy="22" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
-      line(50,30,50,54,2.5)+
-      // shoulders raising
-      line(50,34,30,28,2.5)+line(50,34,70,28,2.5)+
-      arc(`M36 34 Q30 26 30 28`,m,1.5)+
-      arc(`M64 34 Q70 26 70 28`,m,1.5)+
-      line(50,54,44,72,2)+line(50,54,56,72,2)+
-      label(50,88,"肩を上げ下げ")+
-    `</svg>`,
-
-    door_stretch: defs+
-      rect(12,10,8,80,2,a,bg)+
-      rect(80,10,8,80,2,a,bg)+
-      `<circle cx="46" cy="24" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      text(48,86,"プッシュアップ")
+    ),
+    breathing: wrap(
+      circle(50,22,9,b,a)+
+      line(50,31,50,58,2.5)+
+      line(50,38,38,50,2)+ line(50,38,62,50,2)+
+      line(50,58,44,70,2)+ line(50,58,56,70,2)+
+      path("M30 44 Q38 38 46 44 Q54 50 62 44",m,2)+
+      text(50,90,"腹式呼吸")
+    ),
+    knee_chest: wrap(
+      rect(8,44,84,18,9,a,b)+
+      circle(20,53,9,b,a)+
+      line(29,53,50,53,2.5)+
+      line(22,62,20,76,2)+
+      path("M50 44 Q56 32 62 38",a,2)+
+      line(62,38,64,50,2)+
+      path("M52 50 Q60 44 64 52",m,1.5)+
+      text(50,88,"膝を胸へ引き寄せる")
+    ),
+    calf_raise: wrap(
+      circle(50,12,8,b,a)+
+      line(50,20,50,44,2.5)+
+      line(50,30,36,40,2)+ line(50,30,64,40,2)+
+      line(50,44,42,62,2.5)+ line(50,44,58,62,2.5)+
+      line(42,62,40,70,2)+ line(58,62,60,70,2)+
+      '<ellipse cx="50" cy="70" rx="18" ry="4" fill="'+m+'" stroke="'+a+'" stroke-width="1"/>'+
+      text(50,88,"かかとを持ち上げる")
+    ),
+    single_squat: wrap(
+      circle(46,12,8,b,a)+
+      line(46,20,46,40,2.5)+
+      line(46,30,32,40,2)+ line(46,30,60,40,2)+
+      path("M46 40 Q38 54 30 60",a,2.5)+
+      line(30,60,26,78,2)+
+      line(46,40,56,54,m,2,"3 2")+
+      line(22,78,66,78,1.5)+
+      text(46,92,"片脚でしゃがむ")
+    ),
+    step_down: wrap(
+      rect(30,68,58,16,4,a,b)+
+      circle(54,20,8,b,a)+
+      line(54,28,54,46,2.5)+
+      line(54,36,42,44,2)+ line(54,36,66,44,2)+
+      path("M54 46 Q48 56 42 66",a,2.5)+
+      line(42,66,40,80,2)+
+      line(54,46,56,68,2.5)+
+      text(50,92,"ゆっくり下りる")
+    ),
+    rdl: wrap(
+      circle(72,16,8,b,a)+
+      path("M72 24 L40 48",a,2.5)+
+      line(40,48,20,36,2)+
+      line(60,66,58,82,2.5)+ line(80,54,78,82,2.5)+
+      line(48,82,86,82,1.5)+
+      path("M60 44 Q56 36 64 34",m,2)+
+      text(48,90,"股関節を折り曲げる")
+    ),
+    door_stretch: wrap(
+      rect(12,10,8,80,2,a,b)+
+      rect(80,10,8,80,2,a,b)+
+      circle(46,24,8,b,a)+
       line(46,32,46,54,2.5)+
       line(46,40,58,46,2)+
-      // arm on door frame
-      line(46,40,20,36,2)+line(20,36,20,52,2.5)+
-      arc(`M20 36 Q14 30 20 26`,m,2)+
-      label(46,88,"ドア枠でストレッチ")+
-    `</svg>`,
+      line(46,40,20,36,2)+ line(20,36,20,52,2.5)+
+      path("M20 36 Q14 30 20 26",m,2)+
+      text(46,88,"ドア枠でストレッチ")
+    ),
+    wall_push: wrap(
+      rect(80,10,12,80,4,a,b)+
+      circle(38,20,8,b,a)+
+      line(38,28,38,50,2.5)+
+      line(38,36,24,44,2)+
+      line(38,36,60,40,2)+ line(60,40,80,42,2)+
+      line(38,50,32,70,2)+ line(38,50,44,70,2)+
+      line(24,70,52,70,1.5)+
+      text(46,88,"壁を押す")
+    ),
+    side_ext_rot: wrap(
+      rect(8,54,84,14,7,a,b)+
+      circle(22,61,9,b,a)+
+      line(31,61,55,61,2.5)+
+      line(22,66,20,78,2)+
+      line(45,66,44,78,2)+
+      line(55,54,62,54,2)+
+      path("M62 54 Q70 46 72 38",a,2.5)+
+      circle(72,36,4,m,a)+
+      text(50,90,"腕を外側に回す")
+    ),
+    shoulder_flex: wrap(
+      circle(50,50,8,b,a)+
+      line(50,58,50,78,2.5)+
+      line(50,66,38,74,2)+
+      path("M50 50 Q46 38 42 26",a,2.5)+
+      circle(42,24,4,m,a)+
+      text(50,92,"前方に腕を上げる")
+    ),
+    rear_delt: wrap(
+      circle(62,24,8,b,a)+
+      line(62,32,62,54,2.5)+
+      line(62,38,50,44,2)+
+      line(62,54,56,72,2)+ line(62,54,68,72,2)+
+      path("M62 38 Q48 32 30 36",a,2.5)+
+      circle(28,36,4,m,a)+
+      text(50,88,"腕を水平に持ち上げる")
+    ),
+    side_raise: wrap(
+      circle(50,20,8,b,a)+
+      line(50,28,50,52,2.5)+
+      line(50,52,44,70,2)+ line(50,52,56,70,2)+
+      path("M50 36 Q38 32 26 36",a,2.5)+
+      path("M50 36 Q62 32 74 36",a,2.5)+
+      circle(24,36,4,m,a)+ circle(76,36,4,m,a)+
+      text(50,86,"腕を横に持ち上げる")
+    ),
+    face_pull: wrap(
+      rect(82,20,10,60,4,a,b)+
+      circle(34,32,8,b,a)+
+      line(34,40,34,60,2.5)+
+      line(34,48,22,54,2)+
+      line(34,60,28,76,2)+ line(34,60,40,76,2)+
+      line(34,44,50,40,2)+ line(50,40,82,38,2)+
+      line(34,44,50,48,2)+ line(50,48,82,52,2)+
+      text(46,92,"顔の前に引く")
+    ),
+    shrug: wrap(
+      circle(50,22,8,b,a)+
+      line(50,30,50,54,2.5)+
+      path("M50 34 L30 28",a,2.5)+
+      path("M50 34 L70 28",a,2.5)+
+      line(50,54,44,72,2)+ line(50,54,56,72,2)+
+      text(50,88,"肩を上げ下げ")
+    )
   };
-  return (svgs[key]||svgs['balance'])+'';
+  return figures[key] || figures["balance"];
 }
+
 
 // ─── State & API Key ──────────────────────────────────────────────
 let S={part:"腰部",phase:"初期",flags:new Set(),aiCustom:null};
@@ -1096,39 +999,58 @@ function updateApiStatus(){
 }
 
 // ─── Render ───────────────────────────────────────────────────────
+function safeIllust(key, phase) {
+  try { return illust(key||"balance", phase); }
+  catch(e) {
+    return '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="#D6EDE1" stroke="#2C6E49" stroke-width="2"/></svg>';
+  }
+}
+
 function render(){
-  const d=S.aiCustom||DB[S.part][S.phase];
-  const list=document.getElementById("ex-list");
-  list.innerHTML="";
-  d.exercises.forEach((ex,i)=>{
-    const card=document.createElement("div");
-    card.className="ex-card"+(ex.extra?" extra":"");
-    card.style.animationDelay=(i*.04)+"s";
-    const tips=(ex.tips||[]).map(t=>`<span class="ex-tip${(t.includes("注意")||t.includes("痛み")||t.includes("中止"))?" warn":""}">${t}</span>`).join("");
-    // 説明文を「。」で改行して読みやすく
-    const descFormatted = ex.desc.replace(/。(?!$)/g,"。<br>");
-    card.innerHTML=`<div class="ex-card-inner">
-      <div class="ex-illust">${illust(ex.illust||"balance",S.phase)}</div>
-      <div class="ex-content">
-        <div class="ex-top"><span class="ex-num">${String(i+1).padStart(2,"0")}</span><span class="ex-name">${ex.name}</span>${ex.extra?'<span class="extra-tag">+ 追加</span>':""}</div>
-        <div class="ex-desc">${descFormatted}</div>
-        <div class="ex-tips">${tips}</div>
-        <div class="ex-reps">${ex.reps}</div>
-      </div></div>`;
-    list.appendChild(card);
-  });
-  document.getElementById("progress-text").textContent=d.progress;
-  document.getElementById("script-text").textContent=d.script;
-  const nm={初期:"2週間後に再評価 → NRS 3以下で中期フェーズへ進みます",中期:"2週間後に再評価 → 痛みほぼなし・安定性改善で後期フェーズへ進みます",後期:"継続で再発予防まで可能 → 日常動作完全獲得を目標に"};
-  document.getElementById("next-text").textContent=nm[S.phase];
-  document.getElementById("ai-badge").classList.toggle("show",!!S.aiCustom);
-  // update print header
-  const phaseLabel={初期:"炎症期・痛みあり ― 痛みを和らげ、体を動かす準備をします",中期:"回復期・痛み軽減 ― 筋力と安定性を取り戻します",後期:"強化期・再発予防 ― 日常生活への完全復帰を目指します"};
-  document.getElementById("print-title-main").textContent=S.part+"リハビリメニュー";
-  document.getElementById("print-title-sub").textContent="フェーズ："+S.phase+"（"+phaseLabel[S.phase]+"）";
-  const today=new Date().toLocaleDateString("ja-JP",{year:"numeric",month:"long",day:"numeric"});
-  document.getElementById("print-date").textContent=today;
-  document.getElementById("print-footer-date").textContent=today;
+  try {
+    const d=S.aiCustom||DB[S.part][S.phase];
+    const list=document.getElementById("ex-list");
+    list.innerHTML="";
+    d.exercises.forEach((ex,i)=>{
+      const card=document.createElement("div");
+      card.className="ex-card"+(ex.extra?" extra":"");
+      card.style.animationDelay=(i*.04)+"s";
+      const tips=(ex.tips||[]).map(function(t){
+        var warn=(t.indexOf("注意")>=0||t.indexOf("痛み")>=0||t.indexOf("中止")>=0)?" warn":"";
+        return '<span class="ex-tip'+warn+'">'+t+'</span>';
+      }).join("");
+      var descFormatted = ex.desc.replace(/。(?!$)/g,"。<br>");
+      var svgHtml = safeIllust(ex.illust||"balance", S.phase);
+      var extraTag = ex.extra ? '<span class="extra-tag">+ 追加</span>' : "";
+      card.innerHTML='<div class="ex-card-inner">'
+        +'<div class="ex-illust">'+svgHtml+'</div>'
+        +'<div class="ex-content">'
+          +'<div class="ex-top">'
+            +'<span class="ex-num">'+String(i+1).padStart(2,"0")+'</span>'
+            +'<span class="ex-name">'+ex.name+'</span>'
+            +extraTag
+          +'</div>'
+          +'<div class="ex-desc">'+descFormatted+'</div>'
+          +'<div class="ex-tips">'+tips+'</div>'
+          +'<div class="ex-reps">'+ex.reps+'</div>'
+        +'</div>'
+      +'</div>';
+      list.appendChild(card);
+    });
+    document.getElementById("progress-text").textContent=d.progress;
+    document.getElementById("script-text").textContent=d.script;
+    var nm={初期:"2週間後に再評価 → NRS 3以下で中期フェーズへ進みます",中期:"2週間後に再評価 → 痛みほぼなし・安定性改善で後期フェーズへ進みます",後期:"継続で再発予防まで可能 → 日常動作完全獲得を目標に"};
+    document.getElementById("next-text").textContent=nm[S.phase];
+    document.getElementById("ai-badge").classList.toggle("show",!!S.aiCustom);
+    var phaseLabel={初期:"炎症期・痛みあり ― 痛みを和らげ、体を動かす準備をします",中期:"回復期・痛み軽減 ― 筋力と安定性を取り戻します",後期:"強化期・再発予防 ― 日常生活への完全復帰を目指します"};
+    document.getElementById("print-title-main").textContent=S.part+"リハビリメニュー";
+    document.getElementById("print-title-sub").textContent="フェーズ："+S.phase+"（"+phaseLabel[S.phase]+"）";
+    var today=new Date().toLocaleDateString("ja-JP",{year:"numeric",month:"long",day:"numeric"});
+    document.getElementById("print-date").textContent=today;
+    document.getElementById("print-footer-date").textContent=today;
+  } catch(err) {
+    console.error("render error:", err);
+  }
 }
 
 // ─── Selectors ────────────────────────────────────────────────────
