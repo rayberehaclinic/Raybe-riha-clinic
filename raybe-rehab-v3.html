@@ -54,8 +54,9 @@ header{background:var(--text);padding:0 28px;display:flex;align-items:center;jus
 
 /* ── Parts ── */
 .part-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.part-btn{padding:16px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;text-align:center;transition:all .18s;box-shadow:var(--shadow)}
+.part-btn{padding:16px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;text-align:center;transition:all .18s;box-shadow:var(--shadow);-webkit-tap-highlight-color:transparent;min-height:44px}
 .part-btn:hover{border-color:var(--accent-mid);transform:translateY(-1px)}
+.part-btn:active{transform:scale(.97);background:var(--accent-light)}
 .part-btn.active{border-color:var(--accent);background:var(--accent-light)}
 .part-svg{width:48px;height:48px;margin:0 auto 8px}
 .part-name{font-size:15px;font-weight:500}
@@ -63,8 +64,9 @@ header{background:var(--text);padding:0 28px;display:flex;align-items:center;jus
 
 /* ── Phase ── */
 .phase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.phase-btn{padding:14px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;text-align:center;transition:all .18s;box-shadow:var(--shadow)}
+.phase-btn{padding:14px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;text-align:center;transition:all .18s;box-shadow:var(--shadow);-webkit-tap-highlight-color:transparent;min-height:44px}
 .phase-btn:hover{transform:translateY(-1px)}
+.phase-btn:active{transform:scale(.97)}
 .p-tag{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:3px;margin-bottom:6px;font-weight:500}
 .phase-btn[data-phase="初期"] .p-tag{background:var(--phase1-light);color:var(--phase1)}
 .phase-btn[data-phase="中期"] .p-tag{background:var(--phase2-light);color:var(--phase2)}
@@ -1092,7 +1094,6 @@ function updateApiStatus(){
   if(apiKey){s.className="api-status ok";s.textContent="設定済み ✓";inp.value=apiKey.slice(0,8)+"…";}
   else{s.className="api-status none";s.textContent="未設定";}
 }
-updateApiStatus();
 
 // ─── Render ───────────────────────────────────────────────────────
 function render(){
@@ -1148,6 +1149,32 @@ document.getElementById("flags").addEventListener("click",e=>{
   else{S.flags.add(f);b.classList.add("active");}
   S.aiCustom=null;render();
 });
+
+// タッチデバイス対応：touchendでも同様に処理
+function addTouchHandler(id, handler) {
+  const el = document.getElementById(id);
+  el.addEventListener("touchend", e => {
+    e.preventDefault();
+    handler(e);
+  }, {passive: false});
+}
+addTouchHandler("parts", e => {
+  const b = e.target.closest(".part-btn"); if (!b) return;
+  document.querySelectorAll(".part-btn").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); S.part=b.dataset.part; S.aiCustom=null; render();
+});
+addTouchHandler("phases", e => {
+  const b = e.target.closest(".phase-btn"); if (!b) return;
+  document.querySelectorAll(".phase-btn").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); S.phase=b.dataset.phase; S.aiCustom=null; render();
+});
+addTouchHandler("flags", e => {
+  const b = e.target.closest(".flag-btn"); if (!b) return;
+  const f = b.dataset.flag;
+  if(S.flags.has(f)){S.flags.delete(f);b.classList.remove("active");}
+  else{S.flags.add(f);b.classList.add("active");}
+  S.aiCustom=null; render();
+});
 function setExample(t){document.getElementById("ai-input").value=t;}
 
 // ─── AI ───────────────────────────────────────────────────────────
@@ -1187,7 +1214,12 @@ function doCopy(){
 // ─── Print ────────────────────────────────────────────────────────
 function doPrint(){window.print();}
 
-render();
+// ─── Init ─────────────────────────────────────────────────────────
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",()=>{updateApiStatus();render();});
+}else{
+  updateApiStatus();render();
+}
 </script>
 </body>
 </html>
