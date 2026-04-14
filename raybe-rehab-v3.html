@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raybe式｜部位別リハビリメニュー</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F4F2EC;--surface:#FFF;--surface2:#EDEAE2;--border:#D6D2C8;
+  --text:#1C1A17;--text-sub:#6E6A62;--text-hint:#B0ACA3;
+  --accent:#2C6E49;--accent-light:#D6EDE1;--accent-mid:#52B788;
+  --warn:#D4622A;--warn-light:#FAEAE0;
+  --phase1:#B5455A;--phase1-light:#F9E5EA;
+  --phase2:#C97B30;--phase2-light:#FBF0E0;
+  --phase3:#2C6E49;--phase3-light:#D6EDE1;
+  --ai:#3B5BA5;--ai-light:#E4EAF8;
+  --radius:12px;--radius-sm:7px;--shadow:0 1px 3px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+
+/* ── Header ── */
+header{background:var(--text);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:100}
+.logo{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#74C69D;letter-spacing:.04em}
+.logo span{color:#888;font-size:12px;margin-left:10px;font-weight:400}
+.header-right{display:flex;align-items:center;gap:10px}
+.print-btn-header{display:flex;align-items:center;gap:6px;padding:7px 16px;background:transparent;color:#aaa;border:1px solid #444;border-radius:6px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:12px;transition:all .15s}
+.print-btn-header:hover{background:#333;color:#fff;border-color:#555}
+.version-tag{font-family:'DM Mono',monospace;font-size:11px;color:#555;border:1px solid #444;padding:2px 8px;border-radius:3px}
+
+/* ── Layout ── */
+.main{max-width:960px;margin:0 auto;padding:28px 18px 100px}
+.section{margin-bottom:24px}
+.step-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.step-badge{font-family:'DM Mono',monospace;font-size:10px;background:var(--text);color:#fff;padding:3px 9px;border-radius:4px;letter-spacing:.08em}
+.step-title{font-size:13px;font-weight:500;color:var(--text-sub);letter-spacing:.04em}
+
+/* ── API Key ── */
+.api-banner{background:var(--ai-light);border:1.5px solid #B8C8E8;border-radius:var(--radius);padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.api-banner-icon{font-size:18px;flex-shrink:0}
+.api-banner-text{flex:1;min-width:200px}
+.api-banner-label{font-size:12px;font-weight:700;color:var(--ai);margin-bottom:3px}
+.api-banner-sub{font-size:11px;color:#7090C0}
+.api-input-wrap{display:flex;gap:8px;align-items:center;flex:2;min-width:260px}
+.api-input{flex:1;border:1.5px solid #B8C8E8;border-radius:var(--radius-sm);padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;background:#fff;outline:none;color:var(--text)}
+.api-input:focus{border-color:var(--ai)}
+.api-save-btn{padding:8px 16px;background:var(--ai);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:'Noto Sans JP',sans-serif;font-weight:500;white-space:nowrap;transition:all .15s}
+.api-save-btn:hover{background:#2d4a8a}
+.api-status{font-size:11px;font-family:'DM Mono',monospace;padding:4px 10px;border-radius:12px}
+.api-status.ok{background:#D6EDE1;color:#2C6E49}
+.api-status.none{background:#F9E5EA;color:#B5455A}
+
+/* ── Parts ── */
+.part-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.part-btn{padding:16px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;text-align:center;transition:all .18s;box-shadow:var(--shadow)}
+.part-btn:hover{border-color:var(--accent-mid);transform:translateY(-1px)}
+.part-btn.active{border-color:var(--accent);background:var(--accent-light)}
+.part-svg{width:48px;height:48px;margin:0 auto 8px}
+.part-name{font-size:15px;font-weight:500}
+.part-btn.active .part-name{color:var(--accent)}
+
+/* ── Phase ── */
+.phase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.phase-btn{padding:14px 10px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;text-align:center;transition:all .18s;box-shadow:var(--shadow)}
+.phase-btn:hover{transform:translateY(-1px)}
+.p-tag{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:2px 8px;border-radius:3px;margin-bottom:6px;font-weight:500}
+.phase-btn[data-phase="初期"] .p-tag{background:var(--phase1-light);color:var(--phase1)}
+.phase-btn[data-phase="中期"] .p-tag{background:var(--phase2-light);color:var(--phase2)}
+.phase-btn[data-phase="後期"] .p-tag{background:var(--phase3-light);color:var(--phase3)}
+.phase-btn[data-phase="初期"].active{border-color:var(--phase1);background:var(--phase1-light)}
+.phase-btn[data-phase="中期"].active{border-color:var(--phase2);background:var(--phase2-light)}
+.phase-btn[data-phase="後期"].active{border-color:var(--phase3);background:var(--phase3-light)}
+.p-name{font-size:14px;font-weight:500}
+.p-desc{font-size:11px;color:var(--text-hint);margin-top:3px}
+
+/* ── Flags ── */
+.flag-row{display:flex;gap:8px;flex-wrap:wrap}
+.flag-btn{padding:7px 14px;border:1.5px solid var(--border);border-radius:20px;background:var(--surface);cursor:pointer;font-size:12px;color:var(--text-sub);font-family:'Noto Sans JP',sans-serif;transition:all .15s}
+.flag-btn:hover{border-color:var(--warn);color:var(--warn)}
+.flag-btn.active{background:var(--warn-light);border-color:var(--warn);color:var(--warn);font-weight:500}
+
+/* ── AI Box ── */
+.ai-box{background:var(--surface);border:1.5px solid #B8C8E8;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.ai-header{background:var(--ai-light);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #B8C8E8}
+.ai-icon{width:28px;height:28px;background:var(--ai);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-title{font-size:13px;font-weight:700;color:var(--ai)}
+.ai-subtitle{font-size:11px;color:#7090C0;margin-top:1px}
+.ai-body{padding:14px 18px}
+.ai-textarea{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;color:var(--text);background:var(--bg);resize:vertical;min-height:80px;outline:none;transition:border .15s;line-height:1.6}
+.ai-textarea:focus{border-color:var(--ai)}
+.ai-textarea::placeholder{color:var(--text-hint)}
+.ai-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px;flex-wrap:wrap}
+.ai-examples{display:flex;gap:6px;flex-wrap:wrap}
+.ai-example{font-size:11px;padding:4px 10px;border:1px solid #B8C8E8;border-radius:12px;color:var(--ai);cursor:pointer;background:var(--ai-light);transition:all .12s}
+.ai-example:hover{background:#cdd9f0}
+.ai-btn{display:flex;align-items:center;gap:6px;padding:9px 20px;background:var(--ai);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:500;transition:all .15s;flex-shrink:0;white-space:nowrap}
+.ai-btn:hover{background:#2d4a8a}
+.ai-btn:disabled{background:#aab4cc;cursor:not-allowed}
+.ai-loading{display:none;align-items:center;gap:8px;padding:12px 18px 0;font-size:13px;color:var(--ai)}
+.ai-loading.show{display:flex}
+.spinner{width:16px;height:16px;border:2px solid #B8C8E8;border-top-color:var(--ai);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Divider ── */
+hr{border:none;border-top:1px solid var(--border);margin:4px 0 24px}
+
+/* ── Output header ── */
+.out-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap}
+.out-title{font-size:16px;font-weight:700;color:var(--text)}
+.out-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ai-generated-badge{display:none;font-size:11px;background:var(--ai-light);color:var(--ai);border:1px solid #B8C8E8;padding:3px 10px;border-radius:12px;font-weight:500}
+.ai-generated-badge.show{display:inline-block}
+.btn-row{display:flex;gap:8px}
+.copy-btn,.print-btn{display:flex;align-items:center;gap:5px;padding:8px 16px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.copy-btn{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.copy-btn:hover{background:var(--border)}
+.copy-btn.copied{background:var(--accent);color:#fff;border-color:var(--accent)}
+.print-btn{background:var(--text);color:#fff}
+.print-btn:hover{background:#333}
+
+/* ── Exercise cards ── */
+.ex-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.ex-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);animation:fadeSlide .22s ease both}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ex-card.extra{border-color:var(--accent-mid)}
+.ex-card-inner{display:grid;grid-template-columns:130px 1fr}
+.ex-illust{background:var(--surface2);display:flex;align-items:center;justify-content:center;padding:14px;min-height:110px}
+.ex-illust svg{width:100px;height:100px}
+.ex-content{padding:14px 16px}
+.ex-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.ex-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-hint)}
+.ex-name{font-size:15px;font-weight:700;color:var(--text)}
+.extra-tag{font-size:10px;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-mid);padding:2px 8px;border-radius:3px;font-weight:500}
+.ex-desc{font-size:12px;color:var(--text-sub);line-height:1.7;margin-bottom:8px}
+.ex-tips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.ex-tip{font-size:11px;padding:3px 9px;border-radius:12px;background:var(--surface2);color:var(--text-sub);border:1px solid var(--border)}
+.ex-tip.warn{background:var(--warn-light);color:var(--warn);border-color:#e8b090}
+.ex-reps{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);font-weight:500}
+
+/* ── Info / Script / Next ── */
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;box-shadow:var(--shadow)}
+.info-label{font-size:11px;color:var(--text-hint);letter-spacing:.05em;margin-bottom:4px}
+.info-val{font-size:13px;font-weight:500;color:var(--text)}
+.script-box{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:13px 18px;margin-bottom:14px}
+.script-label{font-size:10px;color:var(--accent);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-bottom:5px}
+.script-text{font-size:13px;color:var(--text);line-height:1.75}
+.next-box{background:var(--surface);border:1.5px solid var(--accent);border-radius:var(--radius);padding:13px 18px;display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
+.next-arrow{font-family:'DM Mono',monospace;font-size:16px;color:var(--accent);flex-shrink:0;margin-top:1px}
+.next-text{font-size:13px;color:var(--accent);font-weight:500;line-height:1.6}
+.prohibit-box{background:#F9E8EA;border:1px solid #E8B4BC;border-radius:var(--radius);padding:11px 16px;font-size:12px;color:#7A2535}
+
+/* ─────────────────────────────────────────────
+   PRINT STYLES
+───────────────────────────────────────────── */
+@media print {
+  @page{size:A4;margin:14mm 14mm 14mm 14mm}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff!important;font-size:11pt}
+  header,
+  .section:not(#print-output-section),
+  #print-output-section .out-header .btn-row,
+  .prohibit-box,
+  .api-banner,
+  hr{display:none!important}
+  .main{padding:0!important;max-width:100%!important}
+
+  /* Print header */
+  .print-doc-header{display:flex!important}
+
+  /* Output section visible */
+  #print-output-section{display:block!important}
+  .out-header{margin-bottom:10px}
+  .out-title{font-size:13pt;font-weight:700}
+  .ai-generated-badge{display:inline-block!important}
+
+  /* Cards in 2-column grid for print */
+  .ex-list{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-bottom:12px!important}
+  .ex-card{break-inside:avoid;box-shadow:none!important;border:1px solid #ccc!important}
+  .ex-card-inner{grid-template-columns:80px 1fr!important}
+  .ex-illust{min-height:80px!important;padding:8px!important}
+  .ex-illust svg{width:64px!important;height:64px!important}
+  .ex-content{padding:8px 10px!important}
+  .ex-name{font-size:10pt!important}
+  .ex-desc{font-size:8.5pt!important;margin-bottom:4px!important}
+  .ex-tips{gap:3px!important;margin-bottom:3px!important}
+  .ex-tip{font-size:8pt!important;padding:2px 6px!important}
+  .ex-reps{font-size:8pt!important}
+  .ex-num{font-size:8pt!important}
+
+  .info-row{gap:6px!important;margin-bottom:8px!important}
+  .info-card{padding:8px 10px!important;box-shadow:none!important;border:1px solid #ccc!important}
+  .info-label{font-size:8pt!important}
+  .info-val{font-size:9pt!important}
+
+  .script-box{padding:8px 12px!important;margin-bottom:8px!important}
+  .script-label{font-size:8pt!important}
+  .script-text{font-size:9pt!important}
+
+  .next-box{padding:8px 12px!important;margin-bottom:8px!important;border:1px solid var(--accent)!important;box-shadow:none!important}
+  .next-text{font-size:9pt!important}
+
+  .print-footer{display:block!important;margin-top:10px;padding-top:8px;border-top:1px solid #ddd;font-size:8pt;color:#888;text-align:right}
+}
+
+/* Print-only elements hidden in screen */
+.print-doc-header{display:none}
+.print-footer{display:none}
+
+/* ── Responsive ── */
+@media(max-width:620px){
+  .ex-card-inner{grid-template-columns:90px 1fr}
+  .info-row{grid-template-columns:1fr}
+  .phase-grid,.part-grid{gap:7px}
+  .ai-footer{flex-direction:column;align-items:stretch}
+  .ai-btn{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Raybe <span>部位別リハビリメニュー</span></div>
+  <div class="header-right">
+    <button class="print-btn-header" onclick="doPrint()">🖨 印刷</button>
+    <div class="version-tag">v3.0</div>
+  </div>
+</header>
+
+<div class="main">
+
+<!-- API Key Banner -->
+<div class="api-banner" id="api-banner">
+  <div class="api-banner-icon">🔑</div>
+  <div class="api-banner-text">
+    <div class="api-banner-label">Anthropic API キー設定</div>
+    <div class="api-banner-sub">AI特記事項カスタマイズを使用するには、APIキーを入力してください。<br>キーは <a href="https://console.anthropic.com/" target="_blank" style="color:var(--ai)">console.anthropic.com</a> で取得できます。</div>
+  </div>
+  <div class="api-input-wrap">
+    <input class="api-input" type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off">
+    <button class="api-save-btn" onclick="saveApiKey()">保存</button>
+    <span class="api-status none" id="api-status">未設定</span>
+  </div>
+</div>
+
+<!-- STEP 1 -->
+<div class="section">
+  <div class="step-row"><span class="step-badge">STEP 01</span><span class="step-title">部位を選択</span></div>
+  <div class="part-grid" id="parts">
+    <button class="part-btn active" data-part="腰部">
+      <svg class="part-svg" viewBox="0 0 48 48" fill="none">
+        <!-- spine -->
+        <rect x="21" y="6" width="6" height="28" rx="3" fill="#D6EDE1" stroke="#2C6E49" stroke-width="1.4"/>
+        <!-- pelvis -->
+        <path d="M10 34 Q24 28 38 34 Q38 44 24 44 Q10 44 10 34Z" fill="#D6EDE1" stroke="#2C6E49" stroke-width="1.4"/>
+        <!-- vertebrae marks -->
+        <line x1="21" y1="14" x2="27" y2="14" stroke="#2C6E49" stroke-width="1"/>
+        <line x1="21" y1="20" x2="27" y2="20" stroke="#2C6E49" stroke-width="1"/>
+        <line x1="21" y1="26" x2="27" y2="26" stroke="#2C6E49" stroke-width="1"/>
+        <!-- highlight area -->
+        <rect x="20" y="22" width="8" height="10" rx="2" fill="#52B788" opacity=".4"/>
+      </svg>
+      <div class="part-name">腰部</div>
+    </button>
+    <button class="part-btn" data-part="膝関節">
+      <svg class="part-svg" viewBox="0 0 48 48" fill="none">
+        <!-- femur -->
+        <rect x="19" y="4" width="10" height="18" rx="5" fill="#EEF8F3" stroke="#52B788" stroke-width="1.4"/>
+        <!-- patella -->
+        <ellipse cx="24" cy="26" rx="6" ry="5" fill="#D6EDE1" stroke="#2C6E49" stroke-width="1.6"/>
+        <!-- tibia -->
+        <rect x="19" y="30" width="10" height="14" rx="5" fill="#EEF8F3" stroke="#52B788" stroke-width="1.4"/>
+        <!-- joint line -->
+        <line x1="17" y1="27" x2="31" y2="27" stroke="#2C6E49" stroke-width="1" stroke-dasharray="2 1.5"/>
+        <!-- highlight -->
+        <ellipse cx="24" cy="26" rx="3.5" ry="3" fill="#fff" stroke="#2C6E49" stroke-width="1"/>
+      </svg>
+      <div class="part-name">膝関節</div>
+    </button>
+    <button class="part-btn" data-part="肩関節">
+      <svg class="part-svg" viewBox="0 0 48 48" fill="none">
+        <!-- clavicle -->
+        <path d="M24 12 Q18 10 12 14" stroke="#52B788" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <!-- shoulder joint -->
+        <circle cx="12" cy="16" r="6" fill="#D6EDE1" stroke="#2C6E49" stroke-width="1.6"/>
+        <!-- humerus -->
+        <rect x="9" y="22" width="6" height="18" rx="3" fill="#EEF8F3" stroke="#52B788" stroke-width="1.4"/>
+        <!-- scapula hint -->
+        <path d="M24 12 L22 28" stroke="#D6EDE1" stroke-width="3" stroke-linecap="round"/>
+        <!-- ball -->
+        <circle cx="12" cy="16" r="3" fill="#fff" stroke="#2C6E49" stroke-width="1.2"/>
+      </svg>
+      <div class="part-name">肩関節</div>
+    </button>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="section">
+  <div class="step-row"><span class="step-badge">STEP 02</span><span class="step-title">回復フェーズを選択</span></div>
+  <div class="phase-grid" id="phases">
+    <button class="phase-btn active" data-phase="初期"><span class="p-tag">PHASE 1</span><div class="p-name">初期</div><div class="p-desc">炎症期・痛みあり</div></button>
+    <button class="phase-btn" data-phase="中期"><span class="p-tag">PHASE 2</span><div class="p-name">中期</div><div class="p-desc">回復期・痛み軽減</div></button>
+    <button class="phase-btn" data-phase="後期"><span class="p-tag">PHASE 3</span><div class="p-name">後期</div><div class="p-desc">強化期・再発予防</div></button>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="section">
+  <div class="step-row"><span class="step-badge">STEP 03</span><span class="step-title">症状フラグ（複数選択可）</span></div>
+  <div class="flag-row" id="flags">
+    <button class="flag-btn" data-flag="pain">⚠ 痛み強い（NRS 5以上）</button>
+    <button class="flag-btn" data-flag="rom">↔ 可動域制限あり</button>
+    <button class="flag-btn" data-flag="weak">↓ 筋力低下あり</button>
+  </div>
+</div>
+
+<!-- STEP 4 AI -->
+<div class="section">
+  <div class="step-row"><span class="step-badge">STEP 04</span><span class="step-title">特記事項（任意・AIによる自動カスタマイズ）</span></div>
+  <div class="ai-box">
+    <div class="ai-header">
+      <div class="ai-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#fff" stroke-width="1.5"/><path d="M5.5 8.5L7 10l3.5-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><div class="ai-title">AI 特記事項カスタマイズ</div><div class="ai-subtitle">患者の状況を入力 → AIがメニューを自動最適化</div></div>
+    </div>
+    <div class="ai-body">
+      <textarea class="ai-textarea" id="ai-input" placeholder="例：右膝内側の痛みが強く、階段の下りが困難。変形性膝関節症の診断あり。70代女性。"></textarea>
+      <div class="ai-footer">
+        <div class="ai-examples">
+          <span class="ai-example" onclick="setExample('高齢女性、骨粗鬆症あり、転倒リスク高い')">高齢・転倒リスク</span>
+          <span class="ai-example" onclick="setExample('デスクワーク中心、長時間座位による慢性腰痛、体幹弱い')">デスクワーク腰痛</span>
+          <span class="ai-example" onclick="setExample('スポーツ復帰希望、膝前十字靭帯術後3ヶ月')">スポーツ復帰</span>
+          <span class="ai-example" onclick="setExample('肩関節周囲炎、夜間痛あり、挙上90度まで可能')">五十肩・夜間痛</span>
+        </div>
+        <button class="ai-btn" id="ai-btn" onclick="runAI()">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#fff" stroke-width="1.2"/><path d="M4.5 7l2 2 3-4" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          AIで最適化
+        </button>
+      </div>
+      <div class="ai-loading" id="ai-loading"><div class="spinner"></div><span>AIがメニューをカスタマイズ中...</span></div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- OUTPUT (also used for print) -->
+<div id="print-output-section">
+
+  <!-- Print-only header -->
+  <div class="print-doc-header" style="display:none;align-items:flex-start;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #1C1A17">
+    <div>
+      <div style="font-size:16pt;font-weight:700;letter-spacing:.02em" id="print-title-main">腰部リハビリメニュー</div>
+      <div style="font-size:9pt;color:#666;margin-top:2px" id="print-title-sub">フェーズ：初期（炎症期）</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-family:'DM Mono',monospace;font-size:11pt;font-weight:500;color:#2C6E49;letter-spacing:.04em">Raybe</div>
+      <div style="font-size:8pt;color:#999;margin-top:2px" id="print-date"></div>
+    </div>
+  </div>
+
+  <div class="out-header">
+    <div class="out-title">推奨メニュー</div>
+    <div class="out-meta">
+      <span class="ai-generated-badge" id="ai-badge">AI最適化済み</span>
+      <div class="btn-row">
+        <button class="copy-btn" id="copy-btn" onclick="doCopy()">⧉ コピー</button>
+        <button class="print-btn" onclick="doPrint()">🖨 印刷・PDF保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ex-list" id="ex-list"></div>
+
+  <div class="info-row">
+    <div class="info-card"><div class="info-label">実施設定</div><div class="info-val">10回 × 2セット ／ 週2〜3回</div></div>
+    <div class="info-card"><div class="info-label">進行基準</div><div class="info-val" id="progress-text">—</div></div>
+  </div>
+  <div class="script-box">
+    <div class="script-label">STAFF SCRIPT</div>
+    <div class="script-text" id="script-text">—</div>
+  </div>
+  <div class="next-box">
+    <div class="next-arrow">→</div>
+    <div class="next-text" id="next-text">—</div>
+  </div>
+
+  <div class="print-footer" id="print-footer">Raybe式 部位別リハビリメニュー ／ 作成日：<span id="print-footer-date"></span></div>
+</div>
+
+<div class="prohibit-box">
+  <strong>禁止事項：</strong>全員同じメニューを渡さない ／ 説明なしで実施しない ／ 次のステップを提示しない
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ─── Exercise DB ──────────────────────────────────────────────────
+const DB = {
+  腰部:{
+    初期:{
+      exercises:[
+        {name:"ドローイン",desc:"仰向けで膝を立て、息を吐きながらお腹をへこませ10秒キープ。腹横筋を優先的に活性化します。",tips:["呼吸を止めない","10秒キープ","お腹だけを動かす"],illust:"draw_in",reps:"10回×2セット"},
+        {name:"骨盤前後傾",desc:"仰向けで膝を立て、骨盤を前後にゆっくり傾ける。腰部の柔軟性と固有受容感覚を回復させます。",tips:["ゆっくりした動作","腰の可動域内で"],illust:"pelvic_tilt",reps:"10回×2セット"},
+        {name:"キャット＆カウ",desc:"四つ這いで背中を丸め（キャット）・反らす（カウ）を繰り返す。腰椎のモビリティ回復に効果的。",tips:["首も一緒に動かす","痛みのない範囲で"],illust:"cat_cow",reps:"10回×2セット"},
+        {name:"膝抱えストレッチ",desc:"仰向けで両膝を胸に引き寄せ、腰の伸張感を感じながらキープ。炎症期の腰部緊張緩和に有効。",tips:["強い痛みがあれば片脚ずつ","30秒キープ"],illust:"knee_chest",reps:"30秒×2セット"},
+        {name:"腹式呼吸",desc:"鼻から吸い、口からゆっくり吐く。横隔膜と腹横筋の協調活動で体幹深部を安定させます。",tips:["体を力まない","リラックスして実施"],illust:"breathing",reps:"10呼吸×2セット"},
+      ],
+      goal:"過剰緊張の抑制と軽度可動域確保",progress:"NRS 3以下 → 中期フェーズへ",
+      script:"腰部の過剰緊張と体幹深部筋の機能低下が原因です。この運動で痛みを軽減し、基本的な可動域を確保します。2週間後に再評価し、NRS 3以下で次のフェーズへ進みます。"
+    },
+    中期:{
+      exercises:[
+        {name:"ヒップリフト",desc:"仰向けで膝を立て、お尻をゆっくり持ち上げる。大殿筋・ハムストリングスを鍛え、腰椎骨盤の安定性を向上。",tips:["腰を反らせすぎない","頂点で2秒キープ"],illust:"hip_lift",reps:"10回×2セット"},
+        {name:"デッドバグ",desc:"仰向けで手足を上げ、対角線の手足をゆっくり下ろす。体幹の抗回旋・抗伸展能力を鍛えます。",tips:["腰が浮かないよう注意","ゆっくりコントロール"],illust:"dead_bug",reps:"左右各10回×2セット"},
+        {name:"バードドッグ",desc:"四つ這いで対角の手足を水平に伸ばす。多裂筋・腸腰筋の協調性を高め、腰部安定性を向上。",tips:["体幹が回旋しない","3秒キープ"],illust:"bird_dog",reps:"左右各10回×2セット"},
+        {name:"サイドライイング殿筋",desc:"横向きに寝て上側の脚を持ち上げる。中殿筋を鍛えて骨盤の横方向の安定性を改善します。",tips:["上体がぶれないよう固定","膝は伸ばしたまま"],illust:"hip_abduct",reps:"左右各10回×2セット"},
+        {name:"片脚バランス",desc:"片脚立ちを行い、体幹と下肢の協調的な安定性を高める。立位での腰椎骨盤制御の再教育。",tips:["壁の近くで実施","視線を一点に固定"],illust:"balance",reps:"左右各20秒×2セット"},
+      ],
+      goal:"基本筋力の再獲得と腰椎安定性向上",progress:"NRS 1以下・可動域改善 → 後期フェーズへ",
+      script:"腰部周囲筋の筋力低下と安定性不足が継続の原因です。この運動で体幹の安定性と基本筋力を回復させます。2週間後に再評価し、日常動作での痛みがほぼなくなれば後期へ進みます。"
+    },
+    後期:{
+      exercises:[
+        {name:"スクワット",desc:"両足肩幅に開き、膝と股関節を同時に曲げてしゃがむ。下肢・体幹の複合的な筋力強化と動作パターンの修正。",tips:["膝がつま先より前に出ない","背筋を伸ばす","深さは痛みに応じて"],illust:"squat",reps:"10回×2セット"},
+        {name:"ルーマニアンデッドリフト",desc:"膝を軽く曲げたまま股関節を折り曲げて上体を前傾。ハムストリングスと体幹伸筋群の強化。",tips:["背中を丸めない","股関節を後ろに押し出す"],illust:"rdl",reps:"10回×2セット"},
+        {name:"片脚立ち（応用）",desc:"片脚立ちで軽く膝を曲げた状態を保持。動的バランス能力と腰椎骨盤の3次元的制御を強化。",tips:["骨盤を水平に保つ","30秒以上を目標に"],illust:"balance",reps:"左右各30秒×2セット"},
+        {name:"ウォーキングランジ",desc:"前方へ踏み出しランジ姿勢を取りながら前進。歩行・階段動作に直結した複合的な動作訓練。",tips:["上体が前傾しすぎない","歩幅を一定に"],illust:"lunge",reps:"左右各10歩×2セット"},
+        {name:"プランク",desc:"肘をついた状態で体を一直線に保持。体幹全体の持久的な筋収縮能力を強化します。",tips:["お尻が上がらない","頸部は中間位","30秒から開始"],illust:"plank",reps:"30秒×2セット"},
+      ],
+      goal:"筋力強化と日常動作への応用",progress:"日常動作の完全獲得 → 再発予防プログラムへ",
+      script:"再発予防のための動的安定性強化が目的です。腰部の筋力と正しい動作パターンを獲得し、日常生活への完全応用を目指します。継続で再発リスクを大幅に低下させられます。"
+    }
+  },
+  膝関節:{
+    初期:{
+      exercises:[
+        {name:"クアドセッティング",desc:"仰向けで膝を伸ばした状態で太もも裏をベッドに押しつける。大腿四頭筋の等尺性収縮で炎症を悪化させずに活性化。",tips:["5秒キープ","痛みがある場合は角度調整"],illust:"quad_set",reps:"10回×2セット"},
+        {name:"膝伸展運動",desc:"椅子に座り、足を水平に持ち上げ膝を伸ばす。大腿四頭筋の基本的な筋力維持と活性化。",tips:["完全伸展を目指す","ゆっくり下ろす","強い痛みは角度を制限"],illust:"knee_ext",reps:"10回×2セット"},
+        {name:"ハムストリングスストレッチ",desc:"仰向けでタオルを膝裏に当てかかとを天井へ。膝屈曲筋の柔軟性確保と血流改善。",tips:["強い痛みは中止","30秒キープ","角度を徐々に増やす"],illust:"ham_stretch",reps:"左右30秒×2セット"},
+        {name:"足首ポンプ",desc:"つま先を上下に動かしふくらはぎのポンプ機能を活性化。炎症期の浮腫軽減に貢献。",tips:["座位・臥位どちらでも可","リズミカルに行う"],illust:"ankle_pump",reps:"20回×2セット"},
+        {name:"股関節屈伸（仰臥位）",desc:"仰向けで膝を曲げながらお腹に引き寄せゆっくり戻す。膝への負荷を最小化しながら可動域を維持。",tips:["膝の痛みが増すなら中止","スムーズな動作を"],illust:"hip_flex",reps:"10回×2セット"},
+      ],
+      goal:"大腿四頭筋の活性化と疼痛軽減",progress:"NRS 3以下 → 中期フェーズへ",
+      script:"大腿四頭筋の機能低下と膝関節周囲の炎症が原因です。痛みを軽減しながら膝周囲筋の基本活性化を図ります。2週間後に再評価し、NRS 3以下で次のフェーズへ進みます。"
+    },
+    中期:{
+      exercises:[
+        {name:"ステップアップ",desc:"15〜20cmの台に片足で踏み上がる。大腿四頭筋の機能的筋力と重心移動の協調性を高めます。",tips:["膝がつま先より前に出ない","体幹が傾かないよう","台の高さは痛みに応じて"],illust:"step_up",reps:"左右各10回×2セット"},
+        {name:"レッグエクステンション",desc:"椅子に座り足を水平まで上げて2〜3秒保持。大腿四頭筋の中間〜終末可動域での筋力強化。",tips:["最終角度でキープ","ゆっくり下ろす"],illust:"knee_ext",reps:"10回×2セット"},
+        {name:"ヒップアブダクション",desc:"横向きに寝て上側の脚を30〜45度持ち上げる。中殿筋強化で膝の外反ストレスを軽減。",tips:["骨盤が回旋しないよう固定","ゆっくり下ろす"],illust:"hip_abduct",reps:"左右各10回×2セット"},
+        {name:"ミニスクワット",desc:"両足肩幅に立ち膝60度程度まで浅くしゃがむ。閉鎖性運動連鎖での大腿四頭筋・殿筋の協調強化。",tips:["膝の向きとつま先を揃える","体重を均等に"],illust:"squat",reps:"10回×2セット"},
+        {name:"カーフレイズ",desc:"かかとをゆっくり持ち上げる。下腿三頭筋の強化と膝安定性の向上に貢献します。",tips:["ゆっくり下ろす","壁につかまって実施可"],illust:"calf_raise",reps:"15回×2セット"},
+      ],
+      goal:"膝周囲筋力の再獲得と安定性向上",progress:"NRS 1以下・膝安定性改善 → 後期フェーズへ",
+      script:"膝関節の安定性不足が再発の原因です。大腿四頭筋とハムストリングスのバランスを整え、膝の安定性を取り戻します。2週間後に再評価します。"
+    },
+    後期:{
+      exercises:[
+        {name:"スクワット（フル）",desc:"股関節が膝より低くなるまで深くしゃがむ。下肢全体の複合的な筋力強化と機能的動作パターンの確立。",tips:["膝が内側に入らない","かかとが浮かない","体幹を直立に保つ"],illust:"squat",reps:"10回×2セット"},
+        {name:"ランジ",desc:"大きく前に踏み出し前膝を90度に曲げる。歩行・階段に近い動作での下肢筋力と協調性を高めます。",tips:["後ろの膝がギリギリ床につく程度","上体は垂直に"],illust:"lunge",reps:"左右各10回×2セット"},
+        {name:"片脚スクワット",desc:"片脚でゆっくりしゃがむ。膝関節の動的安定性と神経筋制御の最終確認・強化種目。",tips:["膝の外反に注意","壁を使って補助可"],illust:"single_squat",reps:"左右各10回×2セット"},
+        {name:"ステップダウン",desc:"台から片脚でゆっくり下りる。大腿四頭筋の遠心性収縮（ブレーキ機能）を強化し階段下りを安全に。",tips:["ゆっくりコントロール","膝が外側にぶれないよう"],illust:"step_down",reps:"左右各10回×2セット"},
+        {name:"バランスディスク",desc:"不安定面上で片脚立ちを行う。深部感覚・固有受容感覚の再教育で再受傷リスクを低減。",tips:["転倒注意、壁近くで実施","慣れたら閉眼でチャレンジ"],illust:"balance",reps:"左右各30秒×2セット"},
+      ],
+      goal:"下肢筋力強化と動作安定性の獲得",progress:"階段・歩行の完全獲得 → 再発予防プログラムへ",
+      script:"膝関節の動的安定性強化が最終目標です。下肢全体の筋力と協調性を高め、日常生活への完全復帰を目指します。継続で再発予防まで可能です。"
+    }
+  },
+  肩関節:{
+    初期:{
+      exercises:[
+        {name:"ペンデュラム運動",desc:"前傾姿勢で患側の腕をだらんと垂らし、体を揺らす反動で円を描くように腕を動かす。関節内圧の軽減と受動的可動域の維持。",tips:["腕の力で動かさない","体の揺れを利用","小さな円から始める"],illust:"pendulum",reps:"前後・円20回×2セット"},
+        {name:"肩甲骨内外転",desc:"両肩甲骨を後ろで寄せる（内転）と前に広げる（外転）を繰り返す。肩甲骨周囲筋の活性化。",tips:["首に力が入らないよう","肩をすくめない","リズミカルに"],illust:"scap_squeeze",reps:"10回×2セット"},
+        {name:"肩甲骨挙上・下制",desc:"肩をゆっくり上げ下げする。僧帽筋上部の過緊張緩和と肩甲骨の基本的な運動性確保。",tips:["首が緊張しないよう","吐く息に合わせて下ろす"],illust:"shrug",reps:"10回×2セット"},
+        {name:"振り子（側方）",desc:"ペンデュラムの側方バージョン。関節内圧を低減しながら側方可動域を維持します。",tips:["ゆっくりした動作","腕は完全に脱力"],illust:"pendulum",reps:"20回×2セット"},
+        {name:"外旋ストレッチ",desc:"ドア枠に前腕を当てて外旋方向に軽くストレッチ。前方関節包・内旋筋群の伸張性を維持。",tips:["強い痛みがあれば中止","20〜30秒キープ"],illust:"door_stretch",reps:"30秒×2セット"},
+      ],
+      goal:"疼痛軽減と肩甲骨可動性の確保",progress:"NRS 3以下 → 中期フェーズへ",
+      script:"肩関節周囲の炎症と肩甲骨の可動性低下が原因です。痛みを軽減しながら最低限の可動域を確保します。2週間後に再評価し、NRS 3以下で次のフェーズへ進みます。"
+    },
+    中期:{
+      exercises:[
+        {name:"チューブ外旋",desc:"肘を体側90度に固定し、チューブで外旋方向に腕を外側へ回す。棘下筋・小円筋を強化し肩の後方安定性を高めます。",tips:["肘が体幹から離れない","ゆっくりした動作","肩がすくまないよう"],illust:"ext_rotation",reps:"15回×2セット"},
+        {name:"チューブ内旋",desc:"外旋と逆方向の運動。肩甲下筋を強化。外旋とのバランスを取ることが特に重要です。",tips:["外旋と同じ回数・強度で","体幹を回旋させない"],illust:"int_rotation",reps:"15回×2セット"},
+        {name:"壁プッシュ（肩甲骨）",desc:"壁に手をつき、肩甲骨を壁から離さずに肘を曲げる。前鋸筋の強化と肩甲骨安定性の向上。",tips:["肩甲骨が浮き上がらないよう","肘は外に広げすぎない"],illust:"wall_push",reps:"15回×2セット"},
+        {name:"サイドライイング外旋",desc:"横向きに寝て肘90度で外旋運動。重力を使った低負荷の外旋筋強化。チューブなしで実施可能。",tips:["骨盤が回旋しないよう","ゆっくり下ろす"],illust:"side_ext_rot",reps:"左右各15回×2セット"},
+        {name:"肩関節前方挙上",desc:"チューブを踏み、腕を前方・上方に挙げる。三角筋前部・棘上筋の機能的筋力強化。",tips:["痛みのある角度を避ける","肩甲骨を安定させる"],illust:"shoulder_flex",reps:"15回×2セット"},
+        {name:"水平外転",desc:"前傾位で腕を水平に持ち上げる。後部三角筋・菱形筋の強化。姿勢改善にも有効。",tips:["腰は丸めない","肘を軽く曲げる"],illust:"rear_delt",reps:"15回×2セット"},
+      ],
+      goal:"回旋筋腱板の安定性回復",progress:"NRS 1以下・可動域改善 → 後期フェーズへ",
+      script:"回旋筋腱板の機能低下が肩の不安定性をもたらしています。インナーマッスルの強化と肩甲骨安定性を取り戻します。2週間後に再評価します。"
+    },
+    後期:{
+      exercises:[
+        {name:"ショルダープレス",desc:"頭上に腕を押し上げる。三角筋・僧帽筋・上腕三頭筋の総合的な筋力強化。",tips:["腰を反らせない","軽い負荷から開始","痛みのある角度を避ける"],illust:"shoulder_press",reps:"10回×2セット"},
+        {name:"ラットプルダウン",desc:"バンドを上から引き下げる。広背筋・大円筋・後部三角筋の強化と肩甲骨の下制・内転を促進。",tips:["体が前に傾きすぎない","肩甲骨を引き下げる意識"],illust:"lat_pull",reps:"10回×2セット"},
+        {name:"プッシュアップ",desc:"壁プッシュアップから段階的に傾斜を水平にしていく。大胸筋・三角筋・前鋸筋の協調的な強化。",tips:["体幹をまっすぐ保つ","段階に応じた負荷調整"],illust:"push_up",reps:"10回×2セット"},
+        {name:"サイドレイズ",desc:"腕を側方に持ち上げる。中部三角筋の強化で外転機能を回復。日常的な挙上動作の基盤に。",tips:["肩より高く上げない（初期）","ゆっくり下ろす"],illust:"side_raise",reps:"15回×2セット"},
+        {name:"フェイスプル",desc:"チューブを顔の高さに引く。後部三角筋・回旋筋腱板・菱形筋の協調強化。肩の後方安定性の総仕上げ。",tips:["肘を肩より高く保つ","後ろに引ききる"],illust:"face_pull",reps:"15回×2セット"},
+      ],
+      goal:"肩関節の総合的な筋力強化",progress:"挙上・日常動作の完全獲得 → 再発予防プログラムへ",
+      script:"肩関節の総合機能強化が目的です。アウターマッスルと体幹との協調性を高め、挙上動作や日常生活への完全復帰を目指します。"
+    }
+  }
+};
+
+// ─── Illustrations (clean stick figures) ──────────────────────────
+function illust(key, phase) {
+  const col = {初期:{a:"#B5455A",b:"#F9E5EA",c:"#E8A0AD"},中期:{a:"#C97B30",b:"#FBF0E0",c:"#E8B97A"},後期:{a:"#2C6E49",b:"#D6EDE1",c:"#74C69D"}}[phase]||{a:"#2C6E49",b:"#D6EDE1",c:"#74C69D"};
+  const a=col.a, bg=col.b, m=col.c;
+  // helper: head, body joints
+  const head=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`;
+  const line=(x1,y1,x2,y2,w,dash,clr)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${clr||a}" stroke-width="${w||2}" stroke-linecap="round" ${dash?`stroke-dasharray="${dash}"`:""}/>`;
+  const arc=(d,clr,w)=>`<path d="${d}" stroke="${clr||a}" stroke-width="${w||2}" stroke-linecap="round" fill="none"/>`;
+  const rect=(x,y,w,h,rx,clr,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx||3}" fill="${fill||bg}" stroke="${clr||a}" stroke-width="1.4"/>`;
+  const label=(x,y,t)=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="8" fill="${a}" font-family="'Noto Sans JP',sans-serif">${t}</text>`;
+
+  const defs = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">`;
+
+  const svgs = {
+    // Supine figure doing draw-in
+    draw_in: defs+
+      rect(8,38,84,26,12,a,bg)+
+      // person lying
+      `<ellipse cx="22" cy="51" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+ // head
+      line(32,51,60,51,2.5)+  // torso
+      line(50,51,44,44,2)+  // knee up
+      line(44,44,50,38,2)+  // lower leg
+      // belly arrow in
+      `<ellipse cx="50" cy="51" rx="10" ry="5" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      arc("M45 51 Q50 46 55 51",m,1.5)+
+      label(50,88,"腹部をへこます")+
+    `</svg>`,
+
+    pelvic_tilt: defs+
+      rect(8,40,84,22,10,a,bg)+
+      `<ellipse cx="22" cy="51" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(32,51,55,51,2.5)+
+      line(55,51,50,42,2)+
+      line(50,42,58,37,2)+
+      line(55,51,62,42,2)+
+      line(62,42,68,38,2)+
+      arc("M46 51 Q55 44 64 51","#fff",1.5)+
+      arc("M46 54 Q55 60 64 54",m,2)+
+      label(50,88,"骨盤を前後に傾ける")+
+    `</svg>`,
+
+    cat_cow: defs+
+      // 4-point position
+      line(20,50,80,50,3)+  // spine
+      line(20,50,18,68,2)+line(20,50,22,68,2)+ // front legs
+      line(80,50,78,68,2)+line(80,50,82,68,2)+ // back legs
+      `<circle cx="14" cy="45" r="7" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+ // head
+      line(14,52,20,50,2)+
+      // cat arch
+      arc(`M25 50 Q50 35 75 50`,m,2.5)+
+      // cow dip
+      arc(`M25 50 Q50 62 75 50`,a,1.5)+
+      label(25,82,"キャット")+label(75,78,"カウ")+
+    `</svg>`,
+
+    knee_chest: defs+
+      rect(8,42,84,20,10,a,bg)+
+      `<ellipse cx="20" cy="52" rx="9" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(29,52,50,52,2.5)+
+      // knees pulled up
+      line(50,52,56,40,2)+line(56,40,66,44,2)+
+      line(50,52,60,40,2)+line(60,40,68,44,2)+
+      // arms hugging
+      arc(`M52 50 Q62 35 66 44`,m,2)+
+      arc(`M50 54 Q60 68 66 58`,m,1.5)+
+      label(50,88,"膝を胸へ引き寄せる")+
+    `</svg>`,
+
+    breathing: defs+
+      // seated figure
+      `<circle cx="50" cy="22" r="9" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(50,31,50,58,2.5)+
+      line(50,38,38,50,2)+line(50,38,62,50,2)+ // arms
+      line(50,58,42,76,2)+line(50,58,58,76,2)+
+      // breath waves
+      arc(`M30 44 Q38 38 46 44 Q54 50 62 44`,m,2)+
+      arc(`M28 52 Q36 46 44 52 Q52 58 60 52`,m,1.5)+
+      label(50,90,"腹式呼吸")+
+    `</svg>`,
+
+    hip_lift: defs+
+      rect(8,72,84,8,4,a,bg)+
+      `<ellipse cx="20" cy="75" rx="9" ry="5" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(29,75,48,75,2.5)+
+      // hips raised
+      arc(`M48 75 Q60 50 72 55`,a,2.5)+
+      line(72,55,74,72,2)+
+      line(48,75,46,72,1.5)+
+      `<ellipse cx="60" cy="52" rx="14" ry="8" fill="${m}" stroke="${a}" stroke-width="1.2" opacity=".7"/>`+
+      label(50,90,"殿部を持ち上げる")+
+    `</svg>`,
+
+    dead_bug: defs+
+      rect(8,42,84,18,9,a,bg)+
+      `<ellipse cx="20" cy="51" rx="9" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(29,51,55,51,2.5)+
+      // right arm up
+      line(38,48,30,32,2)+
+      // left arm down
+      line(42,48,34,62,m,1.5)+`<line x1="42" y1="48" x2="34" y2="62" stroke="${m}" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 2"/>`+
+      // left leg up (straight)
+      line(60,51,72,34,2)+
+      // right leg down
+      line(65,51,76,68,2)+
+      label(50,88,"対角の手足を伸ばす")+
+    `</svg>`,
+
+    bird_dog: defs+
+      line(22,50,78,50,3)+
+      // 4 legs
+      line(30,50,28,70,2)+line(38,50,36,70,2)+
+      line(62,50,60,70,2)+line(70,50,72,70,2)+
+      `<circle cx="15" cy="44" r="7" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(15,51,22,50,2)+
+      // extended arm (left up/forward)
+      line(30,46,14,32,2.5)+
+      // extended leg (right back)
+      line(70,46,86,32,2.5)+
+      `<circle cx="10" cy="28" r="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
+      `<circle cx="90" cy="28" r="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
+      label(50,86,"対角の手足を水平に")+
+    `</svg>`,
+
+    hip_abduct: defs+
+      rect(8,54,84,14,7,a,bg)+
+      `<ellipse cx="22" cy="61" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(32,61,55,61,2.5)+
+      line(22,67,20,80,2)+
+      line(40,67,42,80,2)+
+      // top leg raising
+      line(55,54,72,38,2.5)+
+      line(55,67,56,80,2)+
+      arc(`M55 54 Q65 46 72 38`,m,1.5)+
+      `<circle cx="74" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
+      label(50,92,"脚を持ち上げる")+
+    `</svg>`,
+
+    balance: defs+
+      `<circle cx="50" cy="14" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,22,50,48,2.5)+
+      line(50,32,36,44,2)+line(50,32,64,44,2)+
+      // single leg
+      line(50,48,50,76,2.5)+
+      // other leg raised (dashed)
+      line(50,55,38,68,2)+`<line x1="50" y1="55" x2="38" y2="68" stroke="${m}" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 2"/>`+
+      `<ellipse cx="50" cy="80" rx="12" ry="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
+      label(50,92,"片脚立ち")+
+    `</svg>`,
+
+    squat: defs+
+      `<circle cx="50" cy="12" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,20,50,40,2.5)+
+      line(50,30,36,40,2)+line(50,30,64,40,2)+
+      // hips back, knees bent
+      arc(`M50 40 Q42 52 34 58`,a,2.5)+
+      arc(`M50 40 Q58 52 66 58`,a,2.5)+
+      line(34,58,30,76,2)+line(66,58,70,76,2)+
+      line(24,76,76,76,1.5)+
+      // angle marker
+      arc(`M38 50 Q34 44 40 42`,m,1.5)+
+      label(50,90,"膝を曲げてしゃがむ")+
+    `</svg>`,
+
+    lunge: defs+
+      `<circle cx="42" cy="11" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(42,19,42,38,2.5)+
+      line(42,28,28,38,2)+line(42,28,56,38,2)+
+      // front knee bent
+      arc(`M42 38 Q50 52 56 58`,a,2.5)+
+      line(56,58,60,76,2)+
+      // back leg
+      line(42,38,32,58,2.5)+
+      line(32,58,28,76,2)+
+      line(22,76,66,76,1.5)+
+      label(42,90,"踏み出してしゃがむ")+
+    `</svg>`,
+
+    plank: defs+
+      line(12,56,80,56,3)+
+      `<circle cx="84" cy="47" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(84,55,80,56,2)+
+      // forearms
+      line(16,56,16,68,2)+line(28,56,28,68,2)+
+      line(8,68,36,68,1.5)+
+      // feet
+      line(74,56,72,68,2)+
+      line(80,56,78,68,2)+
+      line(64,68,86,68,1.5)+
+      // straight body line
+      line(16,56,80,56,1,`4 2`,m)+
+      label(48,84,"体を一直線に保つ")+
+    `</svg>`,
+
+    rdl: defs+
+      `<circle cx="72" cy="16" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      arc(`M72 24 L40 48`,a,2.5)+
+      line(40,48,20,36,2)+ // arms hanging
+      line(40,48,24,44,2)+
+      // hips hinge
+      line(56,44,58,68,2.5)+
+      line(70,48,72,76,2.5)+
+      line(48,76,80,76,1.5)+
+      arc(`M60 44 Q56 36 64 34`,m,2)+
+      label(48,90,"股関節を折り曲げる")+
+    `</svg>`,
+
+    quad_set: defs+
+      rect(8,44,84,20,10,a,bg)+
+      `<ellipse cx="22" cy="54" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(32,54,72,54,2.5)+
+      line(22,60,20,76,2)+
+      // straight leg
+      line(65,54,76,54,2.5)+
+      // quad highlight
+      `<rect x="35" y="47" width="30" height="9" rx="4" fill="${m}" stroke="${a}" stroke-width="1" opacity=".7"/>`+
+      label(50,88,"太もも裏を押しつける")+
+    `</svg>`,
+
+    knee_ext: defs+
+      // seated
+      rect(10,36,32,36,6,a,bg)+
+      `<circle cx="26" cy="28" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(26,36,26,54,2.5)+
+      // leg extending
+      line(26,54,46,54,2)+
+      line(46,54,68,48,2.5)+
+      arc(`M46 54 Q60 46 68 48`,m,2)+
+      `<circle cx="68" cy="47" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      label(50,86,"膝を伸ばす")+
+    `</svg>`,
+
+    step_up: defs+
+      rect(32,66,56,18,4,a,bg)+
+      `<circle cx="38" cy="30" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(38,38,38,54,2.5)+
+      line(38,46,26,54,2)+line(38,46,50,54,2)+
+      line(38,54,42,66,2.5)+
+      line(42,66,44,80,2)+
+      // step foot
+      line(38,54,28,62,2)+`<line x1="38" y1="54" x2="28" y2="62" stroke="${m}" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 2"/>`+
+      label(55,92,"台に踏み上がる")+
+    `</svg>`,
+
+    ham_stretch: defs+
+      rect(8,50,84,16,8,a,bg)+
+      `<ellipse cx="22" cy="58" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(32,58,50,58,2.5)+
+      line(22,64,20,78,2)+
+      // leg raised
+      line(50,50,72,32,2.5)+
+      line(50,64,52,78,2)+
+      // stretch highlight
+      arc(`M50 50 Q62 40 72 32`,m,2)+
+      `<ellipse cx="72" cy="30" rx="5" ry="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
+      label(50,90,"膝裏を伸ばす")+
+    `</svg>`,
+
+    ankle_pump: defs+
+      rect(8,50,84,16,8,a,bg)+
+      `<ellipse cx="22" cy="58" rx="10" ry="6" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(32,58,68,58,2.5)+
+      line(22,64,20,78,2)+
+      line(54,64,52,78,2)+
+      // foot up
+      arc(`M68 58 Q76 52 80 44`,a,2.5)+
+      // foot down dashed
+      arc(`M68 58 Q76 64 80 70`,m,2)+
+      label(50,90,"足首を上下に動かす")+
+    `</svg>`,
+
+    hip_flex: defs+
+      rect(8,52,84,14,7,a,bg)+
+      `<ellipse cx="22" cy="59" rx="10" ry="5" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(32,59,48,59,2.5)+
+      line(22,64,20,76,2)+
+      // knee to chest
+      arc(`M48 52 Q54 38 60 44`,a,2)+
+      line(60,44,62,52,2)+
+      line(62,52,64,64,1.5)+
+      arc(`M50 56 Q58 50 62 56`,m,1.5)+
+      label(50,88,"膝をお腹へ")+
+    `</svg>`,
+
+    single_squat: defs+
+      `<circle cx="46" cy="12" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(46,20,46,40,2.5)+
+      line(46,30,32,40,2)+line(46,30,60,40,2)+
+      // bent knee
+      arc(`M46 40 Q38 54 30 60`,a,2.5)+
+      line(30,60,26,78,2)+
+      // other leg hinting
+      line(46,40,56,54,1.5)+`<line x1="46" y1="40" x2="56" y2="54" stroke="${m}" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 2"/>`+
+      line(24,78,64,78,1.5)+
+      label(46,92,"片脚でしゃがむ")+
+    `</svg>`,
+
+    step_down: defs+
+      rect(30,68,58,16,4,a,bg)+
+      `<circle cx="54" cy="20" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(54,28,54,46,2.5)+
+      line(54,36,42,44,2)+line(54,36,66,44,2)+
+      // leg going down slowly
+      arc(`M54 46 Q48 56 42 66`,a,2.5)+
+      line(42,66,40,80,2)+
+      // standing leg
+      line(54,46,56,68,2.5)+
+      label(50,92,"ゆっくり下りる")+
+    `</svg>`,
+
+    calf_raise: defs+
+      `<circle cx="50" cy="12" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,20,50,44,2.5)+
+      line(50,30,36,40,2)+line(50,30,64,40,2)+
+      line(50,44,42,62,2.5)+line(50,44,58,62,2.5)+
+      // heels raised
+      line(42,62,40,70,2)+line(58,62,60,70,2)+
+      `<ellipse cx="50" cy="70" rx="18" ry="4" fill="${m}" stroke="${a}" stroke-width="1"/>`+
+      line(34,72,66,72,2)+
+      line(34,68,38,72,1.5)+line(66,68,62,72,1.5)+
+      label(50,88,"かかとを持ち上げる")+
+    `</svg>`,
+
+    pendulum: defs+
+      // leaning forward figure
+      arc(`M30 24 Q36 14 44 12`,a,2)+
+      `<circle cx="44" cy="10" r="7" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(44,17,38,38,2.5)+
+      line(38,38,30,58,1.5)+
+      line(38,38,52,56,1.5)+
+      // dangling arm with circle path
+      line(28,40,22,62,2)+
+      `<ellipse cx="22" cy="62" rx="12" ry="5" stroke="${m}" stroke-width="1.5" stroke-dasharray="3 2" fill="none"/>`+
+      `<circle cx="22" cy="57" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      label(22,80,"円を描く")+
+    `</svg>`,
+
+    scap_squeeze: defs+
+      `<circle cx="50" cy="18" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,26,50,50,2.5)+
+      // arms back squeezing
+      arc(`M50 34 Q40 38 32 34`,a,2)+
+      arc(`M50 34 Q60 38 68 34`,a,2)+
+      line(32,34,28,46,2)+
+      line(68,34,72,46,2)+
+      `<ellipse cx="50" cy="36" rx="16" ry="8" fill="${m}" stroke="${a}" stroke-width="1" opacity=".5"/>`+
+      line(50,50,44,70,2)+line(50,50,56,70,2)+
+      label(50,86,"肩甲骨を寄せる")+
+    `</svg>`,
+
+    ext_rotation: defs+
+      `<circle cx="38" cy="18" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(38,26,38,50,2.5)+
+      line(38,34,26,42,2)+
+      // elbow at 90° against body
+      line(38,34,56,34,2)+
+      line(56,34,56,50,2)+ // upper arm down
+      // forearm rotating out
+      arc(`M56 50 Q68 50 70 38`,a,2.5)+
+      `<circle cx="70" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      arc(`M56 50 Q64 58 70 52`,m,1.5)+
+      label(55,82,"腕を外側に回す")+
+    `</svg>`,
+
+    int_rotation: defs+
+      `<circle cx="38" cy="18" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(38,26,38,50,2.5)+
+      line(38,34,26,42,2)+
+      line(38,34,56,34,2)+
+      line(56,34,56,50,2)+
+      // forearm rotating inward
+      arc(`M56 50 Q44 50 42 38`,a,2.5)+
+      `<circle cx="42" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      arc(`M56 50 Q48 58 42 52`,m,1.5)+
+      label(55,82,"腕を内側に回す")+
+    `</svg>`,
+
+    wall_push: defs+
+      rect(80,10,12,80,4,a,bg)+
+      `<circle cx="38" cy="20" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(38,28,38,50,2.5)+
+      line(38,36,24,44,2)+
+      // arms reaching wall
+      line(38,36,60,40,2)+line(60,40,80,42,2)+
+      line(38,50,32,70,2)+line(38,50,44,70,2)+
+      line(24,70,52,70,1.5)+
+      label(46,88,"壁を押す")+
+    `</svg>`,
+
+    side_ext_rot: defs+
+      rect(8,54,84,14,7,a,bg)+
+      `<ellipse cx="22" cy="61" rx="10" ry="5" fill="${bg}" stroke="${a}" stroke-width="1.5"/>`+
+      line(32,61,55,61,2.5)+
+      line(22,66,20,78,2)+
+      line(45,66,44,78,2)+
+      // elbow bent, forearm up
+      line(55,54,62,54,2)+
+      arc(`M62 54 Q70 46 72 38`,a,2.5)+
+      `<circle cx="72" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      label(50,90,"腕を外側に回す")+
+    `</svg>`,
+
+    shoulder_flex: defs+
+      `<circle cx="50" cy="50" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,58,50,78,2.5)+
+      line(50,66,38,74,2)+
+      line(50,58,56,58,1.5)+
+      // arm raising forward
+      arc(`M50 50 Q46 38 42 26`,a,2.5)+
+      `<circle cx="42" cy="24" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      label(50,92,"前方に腕を上げる")+
+    `</svg>`,
+
+    shoulder_press: defs+
+      `<circle cx="50" cy="40" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,48,50,68,2.5)+
+      line(50,56,36,64,2)+line(50,56,64,64,2)+
+      line(50,68,44,82,2)+line(50,68,56,82,2)+
+      // arms pressing up
+      line(36,64,28,40,2.5)+line(28,40,26,24,2.5)+
+      line(64,64,72,40,2.5)+line(72,40,74,24,2.5)+
+      `<circle cx="26" cy="22" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      `<circle cx="74" cy="22" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      label(50,94,"頭上に押し上げる")+
+    `</svg>`,
+
+    lat_pull: defs+
+      line(14,18,86,18,2)+
+      `<circle cx="50" cy="36" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,44,50,64,2.5)+
+      line(50,52,36,60,2)+line(50,52,64,60,2)+
+      line(50,64,44,80,2)+line(50,64,56,80,2)+
+      // arms pulling down
+      line(36,28,30,44,2.5)+`<line x1="36" y1="28" x2="30" y2="44" stroke="${m}" stroke-width="2" stroke-linecap="round"/>`+
+      line(64,28,70,44,2.5)+`<line x1="64" y1="28" x2="70" y2="44" stroke="${m}" stroke-width="2" stroke-linecap="round"/>`+
+      label(50,92,"引き下げる")+
+    `</svg>`,
+
+    push_up: defs+
+      `<circle cx="76" cy="32" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(76,40,76,54,2.5)+
+      line(76,46,62,44,2)+line(62,44,56,56,2)+
+      line(76,46,90,44,2)+line(90,44,92,54,1.5)+
+      line(16,62,76,54,3)+
+      line(16,62,14,72,2)+line(22,62,20,72,2)+
+      line(10,72,30,72,1.5)+
+      line(70,54,70,72,2)+line(78,54,78,72,2)+
+      line(62,72,86,72,1.5)+
+      label(48,86,"プッシュアップ")+
+    `</svg>`,
+
+    rear_delt: defs+
+      `<circle cx="62" cy="24" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      arc(`M62 32 L62 54`,a,2.5)+
+      line(62,38,50,44,2)+
+      line(62,54,56,72,2)+line(62,54,68,72,2)+
+      // arm raising backward horizontally
+      arc(`M62 38 Q48 32 30 36`,a,2.5)+
+      `<circle cx="28" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      label(50,88,"腕を水平に持ち上げる")+
+    `</svg>`,
+
+    side_raise: defs+
+      `<circle cx="50" cy="20" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,28,50,52,2.5)+
+      line(50,52,44,70,2)+line(50,52,56,70,2)+
+      // arms raising sideways
+      arc(`M50 36 Q38 32 26 36`,a,2.5)+
+      arc(`M50 36 Q62 32 74 36`,a,2.5)+
+      `<circle cx="24" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      `<circle cx="76" cy="36" r="4" fill="${m}" stroke="${a}" stroke-width="1.2"/>`+
+      label(50,86,"腕を横に持ち上げる")+
+    `</svg>`,
+
+    face_pull: defs+
+      rect(82,20,10,60,4,a,bg)+
+      `<circle cx="34" cy="32" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(34,40,34,60,2.5)+
+      line(34,48,22,54,2)+
+      line(34,60,28,76,2)+line(34,60,40,76,2)+
+      // arms pulling to face level
+      line(34,44,50,40,2)+line(50,40,82,38,2)+
+      line(34,44,50,48,2)+line(50,48,82,52,2)+
+      label(46,92,"顔の前に引く")+
+    `</svg>`,
+
+    shrug: defs+
+      `<circle cx="50" cy="22" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(50,30,50,54,2.5)+
+      // shoulders raising
+      line(50,34,30,28,2.5)+line(50,34,70,28,2.5)+
+      arc(`M36 34 Q30 26 30 28`,m,1.5)+
+      arc(`M64 34 Q70 26 70 28`,m,1.5)+
+      line(50,54,44,72,2)+line(50,54,56,72,2)+
+      label(50,88,"肩を上げ下げ")+
+    `</svg>`,
+
+    door_stretch: defs+
+      rect(12,10,8,80,2,a,bg)+
+      rect(80,10,8,80,2,a,bg)+
+      `<circle cx="46" cy="24" r="8" fill="${bg}" stroke="${a}" stroke-width="1.8"/>`+
+      line(46,32,46,54,2.5)+
+      line(46,40,58,46,2)+
+      // arm on door frame
+      line(46,40,20,36,2)+line(20,36,20,52,2.5)+
+      arc(`M20 36 Q14 30 20 26`,m,2)+
+      label(46,88,"ドア枠でストレッチ")+
+    `</svg>`,
+  };
+  return (svgs[key]||svgs['balance'])+'';
+}
+
+// ─── State & API Key ──────────────────────────────────────────────
+let S={part:"腰部",phase:"初期",flags:new Set(),aiCustom:null};
+let apiKey = localStorage.getItem("raybe_api_key") || "";
+
+function saveApiKey(){
+  const v=document.getElementById("api-key-input").value.trim();
+  if(!v){alert("APIキーを入力してください");return;}
+  apiKey=v;
+  localStorage.setItem("raybe_api_key",v);
+  updateApiStatus();
+}
+function updateApiStatus(){
+  const s=document.getElementById("api-status");
+  const inp=document.getElementById("api-key-input");
+  if(apiKey){s.className="api-status ok";s.textContent="設定済み ✓";inp.value=apiKey.slice(0,8)+"…";}
+  else{s.className="api-status none";s.textContent="未設定";}
+}
+updateApiStatus();
+
+// ─── Render ───────────────────────────────────────────────────────
+function render(){
+  const d=S.aiCustom||DB[S.part][S.phase];
+  const list=document.getElementById("ex-list");
+  list.innerHTML="";
+  d.exercises.forEach((ex,i)=>{
+    const card=document.createElement("div");
+    card.className="ex-card"+(ex.extra?" extra":"");
+    card.style.animationDelay=(i*.04)+"s";
+    const tips=(ex.tips||[]).map(t=>`<span class="ex-tip${(t.includes("注意")||t.includes("痛み")||t.includes("中止"))?" warn":""}">${t}</span>`).join("");
+    card.innerHTML=`<div class="ex-card-inner">
+      <div class="ex-illust">${illust(ex.illust||"balance",S.phase)}</div>
+      <div class="ex-content">
+        <div class="ex-top"><span class="ex-num">${String(i+1).padStart(2,"0")}</span><span class="ex-name">${ex.name}</span>${ex.extra?'<span class="extra-tag">+ 追加</span>':""}</div>
+        <div class="ex-desc">${ex.desc}</div>
+        <div class="ex-tips">${tips}</div>
+        <div class="ex-reps">${ex.reps}</div>
+      </div></div>`;
+    list.appendChild(card);
+  });
+  document.getElementById("progress-text").textContent=d.progress;
+  document.getElementById("script-text").textContent=d.script;
+  const nm={初期:"2週間後に再評価 → NRS 3以下で中期フェーズへ進みます",中期:"2週間後に再評価 → 痛みほぼなし・安定性改善で後期フェーズへ進みます",後期:"継続で再発予防まで可能 → 日常動作完全獲得を目標に"};
+  document.getElementById("next-text").textContent=nm[S.phase];
+  document.getElementById("ai-badge").classList.toggle("show",!!S.aiCustom);
+  // update print header
+  const phaseLabel={初期:"炎症期・痛みあり",中期:"回復期・痛み軽減",後期:"強化期・再発予防"};
+  document.getElementById("print-title-main").textContent=S.part+"リハビリメニュー";
+  document.getElementById("print-title-sub").textContent="フェーズ："+S.phase+"（"+phaseLabel[S.phase]+"）"+(S.aiCustom?" ／ AI最適化済み":"");
+  const today=new Date().toLocaleDateString("ja-JP",{year:"numeric",month:"long",day:"numeric"});
+  document.getElementById("print-date").textContent=today;
+  document.getElementById("print-footer-date").textContent=today;
+}
+
+// ─── Selectors ────────────────────────────────────────────────────
+document.getElementById("parts").addEventListener("click",e=>{
+  const b=e.target.closest(".part-btn");if(!b)return;
+  document.querySelectorAll(".part-btn").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");S.part=b.dataset.part;S.aiCustom=null;render();
+});
+document.getElementById("phases").addEventListener("click",e=>{
+  const b=e.target.closest(".phase-btn");if(!b)return;
+  document.querySelectorAll(".phase-btn").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");S.phase=b.dataset.phase;S.aiCustom=null;render();
+});
+document.getElementById("flags").addEventListener("click",e=>{
+  const b=e.target.closest(".flag-btn");if(!b)return;
+  const f=b.dataset.flag;
+  if(S.flags.has(f)){S.flags.delete(f);b.classList.remove("active");}
+  else{S.flags.add(f);b.classList.add("active");}
+  S.aiCustom=null;render();
+});
+function setExample(t){document.getElementById("ai-input").value=t;}
+
+// ─── AI ───────────────────────────────────────────────────────────
+async function runAI(){
+  if(!apiKey){alert("先にAPIキーを設定してください（ページ上部の入力欄）");return;}
+  const input=document.getElementById("ai-input").value.trim();
+  if(!input){alert("特記事項を入力してください");return;}
+  const btn=document.getElementById("ai-btn"),loading=document.getElementById("ai-loading");
+  btn.disabled=true;loading.classList.add("show");
+  const flagText=[...S.flags].map(f=>({pain:"痛み強い(NRS5以上)",rom:"可動域制限あり",weak:"筋力低下あり"}[f])).join("、")||"なし";
+  const sys=`あなたは理学療法士のエキスパートです。指定の情報を元に患者に適した自主トレーニングメニューをJSONのみで返してください。マークダウンやコードブロックは不要です。
+出力形式:{"exercises":[{"name":"種目名","desc":"説明40〜70文字","tips":["注意点"],"reps":"回数表記","illust":"キー","extra":false}],"progress":"進行基準","script":"スタッフ説明60〜100文字"}
+illustキー(必ずこの中から): draw_in,pelvic_tilt,cat_cow,hip_lift,dead_bug,bird_dog,squat,lunge,balance,plank,quad_set,knee_ext,step_up,ham_stretch,hip_abduct,pendulum,scap_squeeze,ext_rotation,int_rotation,shoulder_press,lat_pull,push_up,breathing,knee_chest,hip_flex,ankle_pump,calf_raise,single_squat,step_down,rdl,door_stretch,wall_push,side_ext_rot,shoulder_flex,rear_delt,side_raise,face_pull,shrug
+種目数は5〜6種目。特記事項に合わせてカスタマイズしてください。`;
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:sys,messages:[{role:"user",content:`部位:${S.part} フェーズ:${S.phase} 症状フラグ:${flagText} 特記事項:${input}`}]})});
+    const data=await res.json();
+    const raw=data.content.map(c=>c.text||"").join("");
+    S.aiCustom=JSON.parse(raw.replace(/```json|```/g,"").trim());
+    render();
+  }catch(e){alert("AI最適化に失敗しました。APIキーと特記事項を確認してください。");console.error(e);}
+  finally{btn.disabled=false;loading.classList.remove("show");}
+}
+
+// ─── Copy ─────────────────────────────────────────────────────────
+function doCopy(){
+  const d=S.aiCustom||DB[S.part][S.phase];
+  const exLines=d.exercises.map((ex,i)=>`  ${i+1}. ${ex.name}\n     ${ex.desc}\n     回数：${ex.reps}\n     注意：${(ex.tips||[]).join(" ／ ")}`).join("\n\n");
+  const text=["■ Raybe式 部位別リハビリメニュー",`【部位】${S.part}　【フェーズ】${S.phase}`,S.aiCustom?"【AI最適化済み】":null,"","【推奨メニュー】",exLines,"","【実施設定】10回×2セット ／ 週2〜3回",`【進行基準】${d.progress}`,"","【スタッフ説明テンプレ】",d.script,"","【継続導線】",document.getElementById("next-text").textContent].filter(l=>l!==null).join("\n");
+  navigator.clipboard.writeText(text).then(()=>{
+    const b=document.getElementById("copy-btn");
+    b.classList.add("copied");b.textContent="✓ コピー済み";
+    setTimeout(()=>{b.classList.remove("copied");b.innerHTML="⧉ コピー";},2200);
+  });
+}
+
+// ─── Print ────────────────────────────────────────────────────────
+function doPrint(){window.print();}
+
+render();
+</script>
+</body>
+</html>
